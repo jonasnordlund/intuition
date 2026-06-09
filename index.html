@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="sv" class="h-full bg-zinc-950 text-zinc-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideogram 4.0 Studio</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth transitions for accordion panels */
+        .accordion-content {
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.3s ease, 
+                        padding 0.3s ease;
+        }
+        /* Custom grid background for the canvas */
+        .grid-bg {
+            background-color: #09090b;
+            background-image: 
+                linear-gradient(to right, rgba(63, 63, 70, 0.15) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(63, 63, 70, 0.15) 1px, transparent 1px),
+                linear-gradient(to right, rgba(63, 63, 70, 0.35) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(63, 63, 70, 0.35) 1px, transparent 1px);
+            background-size: 10px 10px, 10px 10px, 100px 100px, 100px 100px;
+        }
+        /* Hide scrollbars for aesthetic panels but allow scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans select-none overflow-hidden">
+
+    <!-- Main App Container -->
+    <div class="flex flex-1 h-full overflow-hidden">
+        
+        <!-- SIDEBAR LEFT: Accordion settings & Credentials -->
+        <aside class="w-80 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0 overflow-hidden z-30">
+            <!-- Studio Branding Header -->
+            <div class="p-4 border-b border-zinc-800 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center font-extrabold text-white shadow-md shadow-purple-500/20">I4</div>
+                    <div>
+                        <h1 class="font-extrabold text-sm tracking-wide text-zinc-100">IDEOGRAM v4</h1>
+                        <p class="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase">Pro Precision Studio</p>
+                    </div>
+                </div>
+                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-bold">V4.0 API</span>
+            </div>
+
+            <!-- Scrollable Settings Container -->
+            <div class="flex-1 overflow-y-auto no-scrollbar">
+                
+                <!-- CATEGORY 1: GENERATE (ACCORDION) -->
+                <div class="border-b border-zinc-800">
+                    <button onclick="toggleAccordion('acc-generate')" class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-zinc-800/40 transition-colors">
+                        <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-300">
+                            <span class="h-2 w-2 rounded-full bg-purple-500"></span> Generate
+                        </span>
+                        <svg id="arrow-acc-generate" class="w-4 h-4 text-zinc-500 transition-transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="acc-generate" class="accordion-content overflow-hidden max-h-[1000px] opacity-100 p-4 space-y-4 border-t border-zinc-950 bg-zinc-900/40">
+                        <!-- Mode Selector (Prompt vs Drawing) -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Metod</label>
+                            <div class="grid grid-cols-2 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850">
+                                <button onclick="setGenerateMode('prompt')" id="btn-mode-prompt" class="py-1.5 px-3 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200">Text Prompt</button>
+                                <button onclick="setGenerateMode('drawing')" id="btn-mode-drawing" class="py-1.5 px-3 rounded-md text-xs font-semibold transition-all bg-purple-600 text-white shadow-sm">Rityta (JSON)</button>
+                            </div>
+                        </div>
+
+                        <!-- Prompt Input (Text mode only) -->
+                        <div id="input-prompt-group" class="space-y-1.5 hidden">
+                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Magic Prompt (Naturligt språk)</label>
+                            <textarea id="prompt-text" placeholder="En glad man på stranden i solnedgången, cinematic..." class="w-full h-24 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-100 placeholder-zinc-650 resize-none"></textarea>
+                        </div>
+
+                        <!-- Resolution Combobox -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Upplösning (Resolution)</label>
+                            <select id="gen-resolution" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-300">
+                                <option value="2048x2048">2048x2048 (1:1 Square)</option>
+                                <option value="2560x1440">2560x1440 (16:9 Landscape)</option>
+                                <option value="1440x2560">1440x2560 (9:16 Portrait)</option>
+                                <option value="2304x1728">2304x1728 (4:3 Landscape)</option>
+                                <option value="1728x2304">1728x2304 (3:4 Portrait)</option>
+                                <option value="2880x1440">2880x1440 (2:1 Wide)</option>
+                                <option value="3168x1296">3168x1296 (22:9 Banner)</option>
+                            </select>
+                        </div>
+
+                        <!-- Rendering Speed Combobox -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Hastighet (Rendering Speed)</label>
+                            <select id="gen-speed" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-300">
+                                <option value="DEFAULT" selected>DEFAULT (Hög kvalitet)</option>
+                                <option value="QUALITY">QUALITY (Högsta precision)</option>
+                                <option value="TURBO">TURBO (Snabb generation)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CATEGORY 2: REMIX (ACCORDION) -->
+                <div class="border-b border-zinc-800">
+                    <button onclick="toggleAccordion('acc-remix')" class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-zinc-800/40 transition-colors">
+                        <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Remix
+                        </span>
+                        <svg id="arrow-acc-remix" class="w-4 h-4 text-zinc-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="acc-remix" class="accordion-content overflow-hidden max-h-0 opacity-0 space-y-4 bg-zinc-900/40">
+                        <!-- Content will open with padding dynamically handled by JS -->
+                        <!-- Remix Image Dropzone -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Källbild (Drag & Drop)</label>
+                            <div id="remix-dropzone" ondragover="event.preventDefault()" ondrop="handleFileDrop(event, 'remix')" onclick="document.getElementById('remix-file').click()" class="border-2 border-dashed border-zinc-800 hover:border-emerald-500/50 bg-zinc-950 rounded-lg p-5 text-center cursor-pointer transition-all relative overflow-hidden group">
+                                <input type="file" id="remix-file" class="hidden" accept="image/*" onchange="handleFileSelect(this, 'remix')">
+                                <div id="remix-preview-container" class="hidden absolute inset-0 z-10 bg-zinc-950/95 flex items-center justify-center p-1">
+                                    <img id="remix-preview" src="" class="max-h-full rounded object-contain">
+                                    <button onclick="event.stopPropagation(); clearFile('remix')" class="absolute top-2 right-2 bg-red-500/20 hover:bg-red-550 text-red-300 hover:text-white p-1 rounded-full border border-red-500/30 transition-all text-xs">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+                                <div class="space-y-1">
+                                    <svg class="w-8 h-8 text-zinc-500 mx-auto group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <p class="text-xs font-semibold text-zinc-300">Släpp bild här</p>
+                                    <p class="text-[10px] text-zinc-500">eller klicka för att bläddra</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remix Prompt -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Instruktioner för Remix</label>
+                            <textarea id="remix-prompt" oninput="updateCenterView()" placeholder="Gör om personen till en tecknad 3D-karaktär..." class="w-full h-20 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-zinc-100 placeholder-zinc-650 resize-none"></textarea>
+                        </div>
+
+                        <!-- Image Weight Slider -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-xs">
+                                <label class="font-semibold text-zinc-400 uppercase tracking-wider">Likhetsgrad (Image Weight)</label>
+                                <span id="weight-val" class="font-mono text-emerald-400 font-bold">40%</span>
+                            </div>
+                            <input type="range" id="remix-weight" min="1" max="100" value="40" oninput="document.getElementById('weight-val').innerText = this.value + '%'" class="w-full h-1 bg-zinc-950 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                        </div>
+
+                        <!-- Remix Resolution -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Upplösning</label>
+                            <select id="remix-resolution" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-zinc-300">
+                                <option value="2048x2048" selected>2048x2048 (1:1 Square)</option>
+                                <option value="2560x1440">2560x1440 (16:9 Landscape)</option>
+                                <option value="1440x2560">1440x2560 (9:16 Portrait)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CATEGORY 3: DESCRIBE (ACCORDION) -->
+                <div class="border-b border-zinc-800">
+                    <button onclick="toggleAccordion('acc-describe')" class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-zinc-800/40 transition-colors">
+                        <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                            <span class="h-2 w-2 rounded-full bg-cyan-500"></span> Describe
+                        </span>
+                        <svg id="arrow-acc-describe" class="w-4 h-4 text-zinc-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="acc-describe" class="accordion-content overflow-hidden max-h-0 opacity-0 space-y-4 bg-zinc-900/40">
+                        <!-- Describe Image Dropzone -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Bild att analysera (Describe)</label>
+                            <div id="describe-dropzone" ondragover="event.preventDefault()" ondrop="handleFileDrop(event, 'describe')" onclick="document.getElementById('describe-file').click()" class="border-2 border-dashed border-zinc-800 hover:border-cyan-500/50 bg-zinc-950 rounded-lg p-5 text-center cursor-pointer transition-all relative overflow-hidden group">
+                                <input type="file" id="describe-file" class="hidden" accept="image/*" onchange="handleFileSelect(this, 'describe')">
+                                <div id="describe-preview-container" class="hidden absolute inset-0 z-10 bg-zinc-950/95 flex items-center justify-center p-1">
+                                    <img id="describe-preview" src="" class="max-h-full rounded object-contain">
+                                    <button onclick="event.stopPropagation(); clearFile('describe')" class="absolute top-2 right-2 bg-red-500/20 hover:bg-red-550 text-red-300 hover:text-white p-1 rounded-full border border-red-500/30 transition-all text-xs">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+                                <div class="space-y-1">
+                                    <svg class="w-8 h-8 text-zinc-500 mx-auto group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <p class="text-xs font-semibold text-zinc-300">Släpp bild här</p>
+                                    <p class="text-[10px] text-zinc-500">eller klicka för att bläddra</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Include Bounding Boxes Checkbox -->
+                        <div class="flex items-center gap-2.5 p-1">
+                            <input type="checkbox" id="describe-bbox" checked class="w-4 h-4 rounded text-cyan-600 bg-zinc-950 border-zinc-800 focus:ring-cyan-500 focus:ring-offset-zinc-900">
+                            <label for="describe-bbox" class="text-xs font-semibold text-zinc-300 cursor-pointer select-none">Inkludera bounding boxes (bbox)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATE UTILITIES: Load/Save Projects -->
+                <div class="p-4 border-b border-zinc-800 space-y-2">
+                    <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Projektfiler</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="saveProjectToDisk()" class="py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-800 border border-zinc-850 text-zinc-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Spara projekt
+                        </button>
+                        <button onclick="document.getElementById('import-file').click()" class="py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-800 border border-zinc-850 text-zinc-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Ladda projekt
+                        </button>
+                    </div>
+                    <input type="file" id="import-file" class="hidden" accept=".json" onchange="loadProjectFromDisk(this)">
+                </div>
+
+            </div>
+
+            <!-- SIDEBAR LEFT FOOTER: Credentials Setup -->
+            <div class="p-4 border-t border-zinc-800 bg-zinc-950 space-y-3 shrink-0">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Anslutning & Autentisering</span>
+                    <button onclick="toggleSandboxMode()" id="sandbox-badge" class="text-[9px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold px-2 py-0.5 rounded-md hover:bg-emerald-500/20 transition-all">DEMO AKTIVT</button>
+                </div>
+                <!-- API Key -->
+                <div class="space-y-1">
+                    <input type="password" id="api-key" oninput="saveCredentials()" placeholder="Ideogram API Key" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-600">
+                </div>
+                <!-- Custom Proxy -->
+                <div class="space-y-1">
+                    <input type="text" id="api-proxy" oninput="saveCredentials()" placeholder="Alternativ CORS-Proxy (Valfri)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-650">
+                    <span class="text-[9px] text-zinc-600 leading-none">Lämna tom för att skicka direkt mot API:t.</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER PANEL: Dynamic workspace for Canvas, Remix and Describe -->
+        <main class="flex-1 bg-zinc-950 flex flex-col min-w-0 h-full relative">
+            
+            <!-- Workspace Tab Selector -->
+            <div class="bg-zinc-900 border-b border-zinc-800 px-6 py-2.5 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-1">
+                    <button onclick="switchCenterTab('tab-editor')" id="tab-btn-editor" class="text-xs font-bold px-3 py-1.5 rounded-lg transition-all bg-zinc-800 text-white">Visual Editor</button>
+                    <button onclick="switchCenterTab('tab-output')" id="tab-btn-output" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all text-zinc-400 hover:text-zinc-200">Resultat & Utdata</button>
+                </div>
+                <div id="active-tool-badge" class="hidden text-xs bg-teal-500/10 text-teal-400 border border-teal-500/20 px-2.5 py-1 rounded-md font-semibold">
+                    Aktivt läge: Ritar Objekt
+                </div>
+            </div>
+
+            <!-- Editor Tab View -->
+            <div id="tab-editor" class="p-6 flex flex-col items-center justify-center space-y-6 flex-1 overflow-y-auto">
+                
+                <!-- 1. Generate Mode View -->
+                <div id="center-generate-view" class="w-full flex flex-col items-center space-y-6">
+                    <!-- If Prompt Mode is active, show this warning banner -->
+                    <div id="prompt-mode-canvas-banner" class="w-full max-w-2xl bg-indigo-950/30 border border-indigo-900/50 rounded-xl p-4 flex gap-3">
+                        <span class="text-indigo-400 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </span>
+                        <div>
+                            <h4 class="font-bold text-sm text-indigo-300">Naturligt språkläge aktivt</h4>
+                            <p class="text-xs text-indigo-400/80 leading-normal mt-0.5">Du skapar bilder med plain text via Magic Prompt just nu. För att rita Bounding Boxes och designa din bild med absolut precision, växla till <b>Drawing</b> i vänsterlisten under Generate-kategorin!</p>
+                        </div>
+                    </div>
+
+                    <!-- The Interactive Canvas Container -->
+                    <div id="canvas-workspace" class="hidden flex flex-col items-center space-y-3 w-full max-w-[min(70vh,750px)]">
+                        <!-- Drawing Canvas Controls toolbar -->
+                        <div class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 flex items-center justify-between shadow-lg">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="setSelectedDrawingTool('obj')" id="tool-btn-obj" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/40 transition-all">
+                                    <span class="h-2 w-2 rounded-full bg-teal-400"></span> Rita Objekt Box (obj)
+                                </button>
+                                <button onclick="setSelectedDrawingTool('text')" id="tool-btn-text" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">
+                                    <span class="h-2 w-2 rounded-full bg-orange-500"></span> Rita Text Box (text)
+                                </button>
+                            </div>
+                            <button onclick="clearAllBoxes()" class="text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-550/10 px-2.5 py-1.5 rounded-lg border border-transparent hover:border-red-500/20 transition-all flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                Rensa ritytan
+                            </button>
+                        </div>
+
+                        <!-- Canvas Body -->
+                        <div class="relative w-full aspect-square bg-zinc-950 border-2 border-zinc-800 rounded-xl overflow-hidden shadow-2xl select-none grid-bg group" id="drawing-canvas" onmousedown="onCanvasMouseDown(event)">
+                            <!-- Overlay instructions when canvas is empty -->
+                            <div id="canvas-empty-hint" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-6 text-center space-y-2 z-0">
+                                <svg class="w-12 h-12 text-zinc-700 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                <span class="text-sm font-semibold text-zinc-400">Ritytan är tom</span>
+                                <span class="text-xs text-zinc-600 max-w-xs">Klicka och dra med musen/fingret på ytan för att rita ut en rektangulär bounding box!</span>
+                            </div>
+
+                            <!-- Inside this box we inject relative-positioned rectangles dynamically -->
+                            <div id="boxes-layer" class="absolute inset-0 z-10 pointer-events-none"></div>
+
+                            <!-- Drag Preview Box -->
+                            <div id="drag-preview" class="absolute border-2 border-dashed border-white/60 bg-white/10 hidden pointer-events-none z-20"></div>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="text-[11px] text-zinc-500">Koordinaterna är normaliserade till en grid om 1000x1000 i enlighet med Ideograms v4 specifikationer.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Remix Mode View -->
+                <div id="center-remix-view" class="w-full max-w-2xl flex flex-col items-center space-y-6 hidden">
+                    <div class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center space-y-4 shadow-xl">
+                        <h3 class="font-bold text-sm text-zinc-400 uppercase tracking-wider">Källbild för Remix</h3>
+                        <div class="w-full aspect-[4/3] max-h-[300px] bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center overflow-hidden relative">
+                            <img id="center-remix-preview" src="" class="max-h-full max-w-full object-contain hidden">
+                            <div id="center-remix-placeholder" class="text-zinc-600 flex flex-col items-center gap-2">
+                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <span class="text-xs">Ingen bild laddad. Släpp eller välj en bild i Remix-panelen till vänster.</span>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-left">
+                            <span class="text-[10px] font-bold uppercase text-emerald-400 tracking-wider block mb-1">Instruktioner för Remix (Prompt)</span>
+                            <p id="center-remix-prompt-text" class="text-xs text-zinc-300 italic">Ingen remixprompt angiven...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Describe Mode View -->
+                <div id="center-describe-view" class="w-full max-w-2xl flex flex-col items-center space-y-6 hidden">
+                    <div class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center space-y-4 shadow-xl">
+                        <h3 class="font-bold text-sm text-zinc-400 uppercase tracking-wider">Bild att Analysera (Describe)</h3>
+                        <div class="w-full aspect-[4/3] max-h-[300px] bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center overflow-hidden relative">
+                            <img id="center-describe-preview" src="" class="max-h-full max-w-full object-contain hidden">
+                            <div id="center-describe-placeholder" class="text-zinc-600 flex flex-col items-center gap-2">
+                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                                <span class="text-xs">Ingen bild laddad. Släpp eller välj en bild i Describe-panelen till vänster.</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-zinc-500 max-w-md leading-relaxed mx-auto">
+                            Ideogram 4.0 analyserar bilden för att extrahera dess högnivåprompter och bounding-boxes, som du sedan kan läsa in direkt på din rityta.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Global Action Button -->
+                <div class="w-full max-w-2xl pt-4">
+                    <button onclick="triggerGeneration()" id="btn-fire" class="w-full py-4 px-6 rounded-xl font-bold text-white text-base tracking-wide bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-purple-900/30 flex items-center justify-center gap-3">
+                        <svg id="btn-fire-icon" class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span id="btn-fire-text">SKAPA BILD MED IDEOGRAM 4.0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Output Tab View -->
+            <div id="tab-output" class="hidden p-6 space-y-6">
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold">Genererat Resultat</h2>
+                        <button onclick="switchCenterTab('tab-editor')" class="text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 transition-all">
+                            Tillbaka till Editor
+                        </button>
+                    </div>
+
+                    <!-- Output Preview Panel -->
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[450px] relative overflow-hidden shadow-2xl">
+                        <!-- Loading State -->
+                        <div id="output-loader" class="hidden flex flex-col items-center space-y-4">
+                            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                            <span class="text-xs font-semibold text-zinc-400" id="output-loader-text">Ansluter till Ideogram 4.0 API...</span>
+                        </div>
+
+                        <!-- Success State Image -->
+                        <div id="output-media-container" class="hidden w-full flex flex-col items-center space-y-4">
+                            <img id="output-image" src="" alt="Ideogram 4.0 Output" class="max-h-[60vh] max-w-full rounded-xl border border-zinc-700 shadow-xl object-contain">
+                            <div class="flex gap-2">
+                                <a id="output-btn-download" href="" target="_blank" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-lg shadow-lg flex items-center gap-1.5 transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Ladda ner bild
+                                </a>
+                                <!-- Describe backport to drawing -->
+                                <button id="output-btn-loadboxes" onclick="loadDescribedBoxesBackToCanvas()" class="hidden px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-lg shadow-lg flex items-center gap-1.5 transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> Läs in boxar till ritytan
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="output-empty" class="text-zinc-600 text-center flex flex-col items-center space-y-3 p-6">
+                            <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span class="text-sm font-semibold text-zinc-500">Inget genererat resultat ännu</span>
+                            <p class="text-xs text-zinc-600 max-w-xs">Slutför inställningarna i vänsterlisten och tryck på "Skapa" för att börja skissa och generera bilder!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- SIDEBAR RIGHT: High-Level / Style details and JSON live compiler preview -->
+        <aside id="sidebar-right" class="w-[340px] bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0 overflow-hidden z-30">
+            <!-- Header -->
+            <div class="p-4 border-b border-zinc-800">
+                <span class="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    Globala Specifikationer
+                </span>
+                <p class="text-[10px] text-zinc-550 mt-0.5 leading-tight">Dessa inställningar styr hela kompositionen för Ideograms modell.</p>
+            </div>
+
+            <!-- Global Settings Input Form -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+                
+                <!-- High Level Description -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Huvudbeskrivning (High Level)</label>
+                    <textarea id="global-high-level" oninput="updateJsonPreview()" placeholder="A hyperrealistic portrait of a scientist..." class="w-full h-16 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-700 resize-none"></textarea>
+                </div>
+
+                <!-- Background Description -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Bakgrundsmiljö (Background)</label>
+                    <textarea id="global-background" oninput="updateJsonPreview()" placeholder="A futuristic laboratory backdrop with blurred server rack lights..." class="w-full h-16 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-700 resize-none"></textarea>
+                </div>
+
+                <!-- Global Style Type -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Stiltyp (Style Type)</label>
+                    <select id="style-type" onchange="toggleStyleInput()" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-300">
+                        <option value="photo" selected>Foto (Photography)</option>
+                        <option value="non-photo">Icke-foto (Art, Design, illustration)</option>
+                    </select>
+                </div>
+
+                <!-- Global Style Value -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Stilvärde (Style Value)</label>
+                    <input type="text" id="global-style-val" oninput="updateJsonPreview()" placeholder="Cinematic, editorial portrait" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-700">
+                </div>
+
+                <!-- Styling Parameters (Aesthetics, Lighting, Medium, artStyle/photo) -->
+                <div class="space-y-3 pt-2 border-t border-zinc-800">
+                    <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Detaljerade Stilattribut</span>
+                    
+                    <!-- Medium -->
+                    <div class="space-y-1">
+                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Medium</label>
+                        <input type="text" id="global-medium" oninput="updateJsonPreview()" placeholder="Photography, oil painting, 3D render..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                    </div>
+
+                    <!-- Aesthetics -->
+                    <div class="space-y-1">
+                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Aesthetic (Aesthetics)</label>
+                        <input type="text" id="global-aesthetics" oninput="updateJsonPreview()" placeholder="Clean design, cinematic composition, hyperdetailed..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                    </div>
+
+                    <!-- Lighting -->
+                    <div class="space-y-1">
+                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Ljus (Lighting)</label>
+                        <input type="text" id="global-lighting" oninput="updateJsonPreview()" placeholder="Volumetric, soft studio glow, sunset lighting..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                    </div>
+
+                    <!-- Conditional Photo Spec -->
+                    <div id="photo-field-group" class="space-y-1">
+                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Kamera/Objektiv (Photo parameters)</label>
+                        <input type="text" id="global-photo-spec" oninput="updateJsonPreview()" placeholder="85mm f/1.4 lens, shallow depth of field..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                    </div>
+
+                    <!-- Conditional Art Style Spec -->
+                    <div id="art-field-group" class="space-y-1 hidden">
+                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Konststil (Art Style)</label>
+                        <input type="text" id="global-art-spec" oninput="updateJsonPreview()" placeholder="Vector art, pop art, watercolor style..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                    </div>
+                </div>
+
+                <!-- Real-Time Compiled JSON Code Area -->
+                <div class="space-y-2 pt-4 border-t border-zinc-800">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Kompilerad JSON-Prompt</span>
+                        <button onclick="copyCompiledJsonToClipboard()" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">Kopiera JSON</button>
+                    </div>
+                    <pre class="bg-zinc-950 border border-zinc-850 rounded-lg p-2.5 text-[10px] text-zinc-400 font-mono overflow-x-auto max-h-56 no-scrollbar" id="json-preview"></pre>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- OVERLAY: Prompt Specifiers Creator for drawn Box -->
+    <div id="modal-box-detail" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative">
+            <h3 class="font-bold text-base text-zinc-100">Specificera Bounding Box</h3>
+            
+            <!-- Box Type -->
+            <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Typ av Bounding Box</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="modal-type-obj" onclick="setModalBoxType('obj')" class="py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 bg-teal-500/10 border-teal-500/50 text-teal-300">
+                        <span class="h-2.5 w-2.5 rounded-full bg-teal-400"></span> Fysiskt Objekt
+                    </button>
+                    <button id="modal-type-text" onclick="setModalBoxType('text')" class="py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 border-zinc-800 text-zinc-400">
+                        <span class="h-2.5 w-2.5 rounded-full bg-orange-500"></span> Renderad Text
+                    </button>
+                </div>
+            </div>
+
+            <!-- Optional Text String Input (Only for text type) -->
+            <div id="modal-text-group" class="space-y-1.5 hidden">
+                <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Textsträng att rendera</label>
+                <input type="text" id="modal-text-value" placeholder="Skriv exakt ord som ska synas, t.ex. 'SKAPA'" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-100 placeholder-zinc-600">
+            </div>
+
+            <!-- Box Description -->
+            <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Beskrivning av innehållet</label>
+                <textarea id="modal-desc" placeholder="T.ex: En vintage neon skylt monterad på väggen..." class="w-full h-24 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-100 placeholder-zinc-600 resize-none"></textarea>
+            </div>
+
+            <!-- Coordinate read-only -->
+            <div class="flex justify-between items-center text-[10px] text-zinc-500 font-mono bg-zinc-950 p-2 rounded-lg border border-zinc-850">
+                <span>Norm-koordinater:</span>
+                <span id="modal-coord-text">[0, 0, 0, 0]</span>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex gap-2.5 pt-2">
+                <button onclick="cancelBoxModal()" class="flex-1 py-2.5 rounded-lg text-xs font-bold bg-zinc-950 hover:bg-zinc-800 border border-zinc-850 text-zinc-400 transition-all">Avbryt</button>
+                <button onclick="saveBoxModal()" class="flex-1 py-2.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg transition-all">Spara Bounding Box</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST MESSAGES LAYER -->
+    <div id="toast-layer" class="fixed bottom-6 right-6 flex flex-col gap-2 z-50 pointer-events-none"></div>
+
+    <!-- CORE SCRIPT ENGINE -->
+    <script>
+        // Global Sandbox state
+        let sandboxMode = true;
+
+        // Bounding boxes coordinates storage
+        // Coordinates normalized to 0-1000 scale in order of [ymin, xmin, ymax, xmax]
+        let boxes = [];
+        let selectedBoxId = null; 
+
+        // Drawing state
+        let isDrawing = false;
+        let isMoving = false;
+        let isResizing = false;
+        let resizeCorner = null; // 'tl', 'tr', 'bl', 'br'
+        let dragStartX = 0, dragStartY = 0;
+        let boxStartCoords = {}; // copy of active box coords before move/resize
+        let activeSection = 'generate'; // 'generate', 'remix', 'describe'
+
+        // Drawing helpers
+        let selectedDrawingTool = 'obj'; // 'obj' or 'text'
+        let drawStartX = 0;
+        let drawStartY = 0;
+        let tempCoords = null;
+        let generateMode = 'drawing'; // 'prompt' or 'drawing'
+
+        // File management variables
+        let uploadedRemixFile = null;
+        let uploadedDescribeFile = null;
+        let lastDescribedResponse = null; // for backporting boxes back into canvas
+
+        // Modal Specific Box states
+        let modalBoxType = 'obj';
+        let modalBoxCoords = null; // [ymin, xmin, ymax, xmax]
+
+        // Main execution block starts on window load
+        window.onload = function() {
+            // Apply localStorage credentials if they exist
+            if (localStorage.getItem('ideogram_api_key')) {
+                document.getElementById('api-key').value = localStorage.getItem('ideogram_api_key');
+                sandboxMode = false;
+                updateSandboxBadge();
+            }
+            if (localStorage.getItem('ideogram_api_proxy')) {
+                document.getElementById('api-proxy').value = localStorage.getItem('ideogram_api_proxy');
+            }
+
+            // Real-time compilation of JSON preview
+            setInterval(updateJsonPreview, 500);
+            
+            // Touch handlers
+            setupTouchSupport();
+
+            // Initialize the default center view layout
+            updateCenterView();
+        }
+
+        // Accordion Toggle handler with explicit style and height cleanup
+        function toggleAccordion(sectionId) {
+            const sections = ['acc-generate', 'acc-remix', 'acc-describe'];
+            const target = document.getElementById(sectionId);
+            const isCollapsed = target.classList.contains('max-h-0');
+
+            sections.forEach(sec => {
+                const el = document.getElementById(sec);
+                const arrow = document.getElementById('arrow-' + sec);
+                
+                // Fully collapse everything to zero size, zero margins/paddings, and no border lines
+                el.classList.add('max-h-0', 'opacity-0');
+                el.classList.remove('max-h-[1000px]', 'p-4', 'opacity-100', 'border-t', 'border-zinc-950');
+                arrow.classList.remove('rotate-180');
+            });
+
+            // Expand target if it was previously collapsed
+            if (isCollapsed) {
+                target.classList.remove('max-h-0', 'opacity-0');
+                target.classList.add('max-h-[1000px]', 'p-4', 'opacity-100', 'border-t', 'border-zinc-950');
+                document.getElementById('arrow-' + sectionId).classList.add('rotate-180');
+                
+                // Update active general category based on expanded accordion
+                if (sectionId === 'acc-generate') {
+                    activeSection = 'generate';
+                    switchCenterTab('tab-editor');
+                } else if (sectionId === 'acc-remix') {
+                    activeSection = 'remix';
+                    switchCenterTab('tab-editor');
+                } else if (sectionId === 'acc-describe') {
+                    activeSection = 'describe';
+                    switchCenterTab('tab-editor'); // Staying in Editor View to let users click ANALYSERA first
+                }
+                updateCenterView();
+            }
+        }
+
+        // Manage UI views based on prompt vs drawing
+        function setGenerateMode(mode) {
+            generateMode = mode;
+            const btnPrompt = document.getElementById('btn-mode-prompt');
+            const btnDrawing = document.getElementById('btn-mode-drawing');
+            const promptInputGroup = document.getElementById('input-prompt-group');
+
+            if (mode === 'prompt') {
+                btnPrompt.className = "py-1.5 px-3 rounded-md text-xs font-semibold transition-all bg-purple-600 text-white shadow-sm";
+                btnDrawing.className = "py-1.5 px-3 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200";
+                promptInputGroup.classList.remove('hidden');
+            } else {
+                btnPrompt.className = "py-1.5 px-3 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200";
+                btnDrawing.className = "py-1.5 px-3 rounded-md text-xs font-semibold transition-all bg-purple-600 text-white shadow-sm";
+                promptInputGroup.classList.add('hidden');
+            }
+            updateCenterView();
+        }
+
+        // Central Adapter Engine for dynamically re-arranging the workspace elements
+        function updateCenterView() {
+            const viewGenerate = document.getElementById('center-generate-view');
+            const viewRemix = document.getElementById('center-remix-view');
+            const viewDescribe = document.getElementById('center-describe-view');
+            
+            const btnFire = document.getElementById('btn-fire');
+            const btnFireText = document.getElementById('btn-fire-text');
+            const btnFireIcon = document.getElementById('btn-fire-icon');
+
+            // Hide all container blocks
+            viewGenerate.classList.add('hidden');
+            viewRemix.classList.add('hidden');
+            viewDescribe.classList.add('hidden');
+
+            // Clear all tailwind color styles on the Fire button first
+            btnFire.className = "w-full py-4 px-6 rounded-xl font-bold text-white text-base tracking-wide transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg flex items-center justify-center gap-3";
+
+            if (activeSection === 'generate') {
+                viewGenerate.classList.remove('hidden');
+                btnFireText.innerText = "SKAPA BILD MED IDEOGRAM 4.0";
+                btnFire.classList.add("bg-gradient-to-r", "from-purple-600", "to-indigo-600", "hover:from-purple-500", "hover:to-indigo-500", "shadow-purple-900/30");
+                btnFireIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>`;
+
+                const workspace = document.getElementById('canvas-workspace');
+                const banner = document.getElementById('prompt-mode-canvas-banner');
+                if (generateMode === 'prompt') {
+                    banner.classList.remove('hidden');
+                    workspace.classList.add('hidden');
+                } else {
+                    banner.classList.add('hidden');
+                    workspace.classList.remove('hidden');
+                }
+            } else if (activeSection === 'remix') {
+                viewRemix.classList.remove('hidden');
+                btnFireText.innerText = "REMIXA BILD MED IDEOGRAM 4.0";
+                btnFire.classList.add("bg-gradient-to-r", "from-emerald-600", "to-teal-600", "hover:from-emerald-500", "hover:to-teal-500", "shadow-emerald-900/30");
+                btnFireIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.228 10H16M12 12V4h8"/>`;
+
+                // Live populate current prompt instructions to center studio
+                const promptVal = document.getElementById('remix-prompt').value.trim();
+                document.getElementById('center-remix-prompt-text').innerText = promptVal ? `"${promptVal}"` : "Ingen remixprompt angiven...";
+            } else if (activeSection === 'describe') {
+                viewDescribe.classList.remove('hidden');
+                btnFireText.innerText = "ANALYSERA BILD MED IDEOGRAM 4.0";
+                btnFire.classList.add("bg-gradient-to-r", "from-cyan-600", "to-sky-600", "hover:from-cyan-500", "hover:to-sky-500", "shadow-cyan-900/30");
+                btnFireIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.663 17h4.673M12 3v1m6.364 .364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>`;
+            }
+
+            updateJsonPreview();
+        }
+
+        // Center Area Tabs
+        function switchCenterTab(tabId) {
+            const tabEditor = document.getElementById('tab-editor');
+            const tabOutput = document.getElementById('tab-output');
+            
+            const btnEditor = document.getElementById('tab-btn-editor');
+            const btnOutput = document.getElementById('tab-btn-output');
+
+            if (tabId === 'tab-editor') {
+                tabEditor.classList.remove('hidden');
+                tabOutput.classList.add('hidden');
+                
+                btnEditor.className = "text-xs font-bold px-3 py-1.5 rounded-lg transition-all bg-zinc-800 text-white";
+                btnOutput.className = "text-xs font-semibold px-3 py-1.5 rounded-lg transition-all text-zinc-400 hover:text-zinc-200";
+            } else {
+                tabEditor.classList.add('hidden');
+                tabOutput.classList.remove('hidden');
+                
+                btnEditor.className = "text-xs font-semibold px-3 py-1.5 rounded-lg transition-all text-zinc-400 hover:text-zinc-200";
+                btnOutput.className = "text-xs font-bold px-3 py-1.5 rounded-lg transition-all bg-zinc-800 text-white";
+            }
+        }
+
+        // Set style parameters Photo vs Non-photo
+        function toggleStyleInput() {
+            const style = document.getElementById('style-type').value;
+            const photoGroup = document.getElementById('photo-field-group');
+            const artGroup = document.getElementById('art-field-group');
+
+            if (style === 'photo') {
+                photoGroup.classList.remove('hidden');
+                artGroup.classList.add('hidden');
+            } else {
+                photoGroup.classList.add('hidden');
+                artGroup.classList.remove('hidden');
+            }
+            updateJsonPreview();
+        }
+
+        // Selected canvas drawing tool (obj / text)
+        function setSelectedDrawingTool(tool) {
+            selectedDrawingTool = tool;
+            const btnObj = document.getElementById('tool-btn-obj');
+            const btnText = document.getElementById('tool-btn-text');
+            const badge = document.getElementById('active-tool-badge');
+
+            if (tool === 'obj') {
+                btnObj.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/40 transition-all";
+                btnText.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all";
+                badge.innerText = "Aktivt läge: Ritar Objekt";
+                badge.classList.remove('bg-orange-500/10', 'text-orange-400', 'border-orange-500/20');
+                badge.classList.add('bg-teal-500/10', 'text-teal-400', 'border-teal-500/20');
+            } else {
+                btnObj.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all";
+                btnText.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-500/20 text-orange-300 border border-orange-500/40 transition-all";
+                badge.innerText = "Aktivt läge: Ritar Text";
+                badge.classList.remove('bg-teal-500/10', 'text-teal-400', 'border-teal-500/20');
+                badge.classList.add('bg-orange-500/10', 'text-orange-400', 'border-orange-500/20');
+            }
+        }
+
+        // Credentials security storage
+        function saveCredentials() {
+            const key = document.getElementById('api-key').value.trim();
+            const proxy = document.getElementById('api-proxy').value.trim();
+
+            if (key) {
+                localStorage.setItem('ideogram_api_key', key);
+                sandboxMode = false;
+            } else {
+                localStorage.removeItem('ideogram_api_key');
+                sandboxMode = true;
+            }
+
+            if (proxy) {
+                localStorage.setItem('ideogram_api_proxy', proxy);
+            } else {
+                localStorage.removeItem('ideogram_api_proxy');
+            }
+            updateSandboxBadge();
+        }
+
+        function toggleSandboxMode() {
+            sandboxMode = !sandboxMode;
+            updateSandboxBadge();
+            showToast(sandboxMode ? "Demo-läge aktiverat" : "API-läge aktiverat", 
+                      sandboxMode ? "Bilder kommer att simuleras istället för att belasta ditt API-konto." : "Anrop skickas direkt till din api-nyckel.", 
+                      sandboxMode ? "amber" : "indigo");
+        }
+
+        function updateSandboxBadge() {
+            const badge = document.getElementById('sandbox-badge');
+            if (sandboxMode) {
+                badge.innerText = "DEMO AKTIVT";
+                badge.className = "text-[9px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold px-2 py-0.5 rounded-md hover:bg-emerald-500/20 transition-all";
+            } else {
+                badge.innerText = "LIVE API";
+                badge.className = "text-[9px] bg-purple-500/15 border border-purple-500/30 text-purple-400 font-bold px-2 py-0.5 rounded-md hover:bg-purple-500/20 transition-all";
+            }
+        }
+
+        // Coordinate converter from pixel/client to 0-1000 normalized grid
+        function clientToNormalized(clientX, clientY) {
+            const canvas = document.getElementById('drawing-canvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            // Calculate proportional position 0 to 1000
+            const x = ((clientX - rect.left) / rect.width) * 1000;
+            const y = ((clientY - rect.top) / rect.height) * 1000;
+
+            // clamp values between 0 and 1000
+            return {
+                x: Math.max(0, Math.min(1000, Math.round(x))),
+                y: Math.max(0, Math.min(1000, Math.round(y)))
+            };
+        }
+
+        // Core Canvas Mouse Events
+        function onCanvasMouseDown(e) {
+            // Check if user clicked a resize handle
+            if (e.target.classList.contains('resize-handle')) {
+                const corner = e.target.dataset.corner;
+                initiateResize(corner, e);
+                return;
+            }
+
+            // Check if user clicked an existing box body
+            const boxElement = e.target.closest('.canvas-box');
+            if (boxElement) {
+                const boxId = parseInt(boxElement.dataset.id);
+                
+                // If it's already selected, initiate moving
+                if (selectedBoxId === boxId) {
+                    initiateMove(e);
+                } else {
+                    // Just select it first
+                    selectBox(boxId);
+                }
+                return;
+            }
+
+            // Clicking empty area deselects and starts drawing
+            deselectAllBoxes();
+            
+            isDrawing = true;
+            const norm = clientToNormalized(e.clientX, e.clientY);
+            drawStartX = norm.x;
+            drawStartY = norm.y;
+
+            const preview = document.getElementById('drag-preview');
+            preview.style.left = `${(drawStartX / 10)}%`;
+            preview.style.top = `${(drawStartY / 10)}%`;
+            preview.style.width = '0%';
+            preview.style.height = '0%';
+            preview.classList.remove('hidden');
+
+            // Attach listeners to document to handle out-of-canvas dragging smoothly
+            document.addEventListener('mousemove', onDocumentMouseMove);
+            document.addEventListener('mouseup', onDocumentMouseUp);
+        }
+
+        function initiateMove(e) {
+            isMoving = true;
+            const norm = clientToNormalized(e.clientX, e.clientY);
+            dragStartX = norm.x;
+            dragStartY = norm.y;
+
+            const activeBox = boxes.find(b => b.id === selectedBoxId);
+            boxStartCoords = { ...activeBox };
+
+            document.addEventListener('mousemove', onDocumentMouseMove);
+            document.addEventListener('mouseup', onDocumentMouseUp);
+            e.stopPropagation();
+        }
+
+        function initiateResize(corner, e) {
+            isResizing = true;
+            resizeCorner = corner;
+            
+            const norm = clientToNormalized(e.clientX, e.clientY);
+            dragStartX = norm.x;
+            dragStartY = norm.y;
+
+            const activeBox = boxes.find(b => b.id === selectedBoxId);
+            boxStartCoords = { ...activeBox };
+
+            document.addEventListener('mousemove', onDocumentMouseMove);
+            document.addEventListener('mouseup', onDocumentMouseUp);
+            e.stopPropagation();
+            e.preventDefault();
+        }
+
+        function onDocumentMouseMove(e) {
+            const norm = clientToNormalized(e.clientX, e.clientY);
+
+            if (isDrawing) {
+                const xmin = Math.min(drawStartX, norm.x);
+                const xmax = Math.max(drawStartX, norm.x);
+                const ymin = Math.min(drawStartY, norm.y);
+                const ymax = Math.max(drawStartY, norm.y);
+
+                const preview = document.getElementById('drag-preview');
+                preview.style.left = `${xmin / 10}%`;
+                preview.style.top = `${ymin / 10}%`;
+                preview.style.width = `${(xmax - xmin) / 10}%`;
+                preview.style.height = `${(ymax - ymin) / 10}%`;
+
+                tempCoords = [ymin, xmin, ymax, xmax];
+            } 
+            else if (isMoving && selectedBoxId !== null) {
+                const dx = norm.x - dragStartX;
+                const dy = norm.y - dragStartY;
+
+                const activeBox = boxes.find(b => b.id === selectedBoxId);
+                let newYmin = boxStartCoords.ymin + dy;
+                let newXmin = boxStartCoords.xmin + dx;
+                let newYmax = boxStartCoords.ymax + dy;
+                let newXmax = boxStartCoords.xmax + dx;
+
+                // Collision guard rails (0 - 1000 grid limits)
+                const height = boxStartCoords.ymax - boxStartCoords.ymin;
+                const width = boxStartCoords.xmax - boxStartCoords.xmin;
+
+                if (newYmin < 0) { newYmin = 0; newYmax = height; }
+                if (newYmax > 1000) { newYmax = 1000; newYmin = 1000 - height; }
+                if (newXmin < 0) { newXmin = 0; newXmax = width; }
+                if (newXmax > 1000) { newXmax = 1000; newXmin = 1000 - width; }
+
+                activeBox.ymin = newYmin;
+                activeBox.xmin = newXmin;
+                activeBox.ymax = newYmax;
+                activeBox.xmax = newXmax;
+
+                renderBoxesOnCanvas();
+            }
+            else if (isResizing && selectedBoxId !== null) {
+                const dx = norm.x - dragStartX;
+                const dy = norm.y - dragStartY;
+                const activeBox = boxes.find(b => b.id === selectedBoxId);
+
+                let ymin = boxStartCoords.ymin;
+                let xmin = boxStartCoords.xmin;
+                let ymax = boxStartCoords.ymax;
+                let xmax = boxStartCoords.xmax;
+
+                const minSize = 20; // prevent flipping/inverting
+
+                if (resizeCorner === 'tl') {
+                    ymin = Math.min(boxStartCoords.ymax - minSize, Math.max(0, ymin + dy));
+                    xmin = Math.min(boxStartCoords.xmax - minSize, Math.max(0, xmin + dx));
+                } else if (resizeCorner === 'tr') {
+                    ymin = Math.min(boxStartCoords.ymax - minSize, Math.max(0, ymin + dy));
+                    xmax = Math.max(boxStartCoords.xmin + minSize, Math.min(1000, xmax + dx));
+                } else if (resizeCorner === 'bl') {
+                    ymax = Math.max(boxStartCoords.ymin + minSize, Math.min(1000, ymax + dy));
+                    xmin = Math.min(boxStartCoords.xmax - minSize, Math.max(0, xmin + dx));
+                } else if (resizeCorner === 'br') {
+                    ymax = Math.max(boxStartCoords.ymin + minSize, Math.min(1000, ymax + dy));
+                    xmax = Math.max(boxStartCoords.xmin + minSize, Math.min(1000, xmax + dx));
+                }
+
+                activeBox.ymin = ymin;
+                activeBox.xmin = xmin;
+                activeBox.ymax = ymax;
+                activeBox.xmax = xmax;
+
+                renderBoxesOnCanvas();
+            }
+        }
+
+        function onDocumentMouseUp(e) {
+            document.removeEventListener('mousemove', onDocumentMouseMove);
+            document.removeEventListener('mouseup', onDocumentMouseUp);
+
+            const preview = document.getElementById('drag-preview');
+            preview.classList.add('hidden');
+
+            if (isDrawing) {
+                isDrawing = false;
+                if (tempCoords) {
+                    const width = tempCoords[3] - tempCoords[1];
+                    const height = tempCoords[2] - tempCoords[0];
+                    
+                    // Filter accidental clicks or extremely small selections
+                    if (width > 15 && height > 15) {
+                        openBoxModal(tempCoords);
+                    }
+                }
+                tempCoords = null;
+            }
+            else if (isMoving) {
+                isMoving = false;
+                updateJsonPreview();
+            }
+            else if (isResizing) {
+                isResizing = false;
+                updateJsonPreview();
+            }
+        }
+
+        // Select specific Box
+        function selectBox(id) {
+            selectedBoxId = id;
+            renderBoxesOnCanvas();
+        }
+
+        // Deselect Box
+        function deselectAllBoxes() {
+            selectedBoxId = null;
+            renderBoxesOnCanvas();
+        }
+
+        // Touch Support implementation for portable tablets & screens
+        function setupTouchSupport() {
+            const canvas = document.getElementById('drawing-canvas');
+            
+            canvas.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    // Map simulated mouse event
+                    const simulatedEvent = new MouseEvent('mousedown', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    // Fire target
+                    e.target.dispatchEvent(simulatedEvent);
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    const simulatedEvent = new MouseEvent('mousemove', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    document.dispatchEvent(simulatedEvent);
+                    e.preventDefault(); // prevent scrolling while editing
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', function(e) {
+                const simulatedEvent = new MouseEvent('mouseup', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(simulatedEvent);
+            }, { passive: true });
+        }
+
+        // Render visual divs for bounding boxes
+        function renderBoxesOnCanvas() {
+            const layer = document.getElementById('boxes-layer');
+            const hint = document.getElementById('canvas-empty-hint');
+            
+            // Empty the active renderer
+            layer.innerHTML = "";
+
+            if (boxes.length === 0) {
+                hint.classList.remove('hidden');
+                return;
+            } else {
+                hint.classList.add('hidden');
+            }
+
+            boxes.forEach(box => {
+                const isSelected = box.id === selectedBoxId;
+                const isText = box.type === 'text';
+
+                // Setup container div
+                const el = document.createElement('div');
+                el.dataset.id = box.id;
+                el.className = `absolute border-2 pointer-events-auto cursor-pointer canvas-box transition-shadow duration-150 ${
+                    isSelected ? 'z-30' : 'z-20'
+                } ${
+                    isText 
+                        ? 'border-orange-500 bg-orange-500/10 hover:bg-orange-500/20' 
+                        : 'border-teal-500 bg-teal-500/10 hover:bg-teal-500/20'
+                }`;
+
+                // Position box as percentages based on grid coordinates
+                el.style.top = `${box.ymin / 10}%`;
+                el.style.left = `${box.xmin / 10}%`;
+                el.style.width = `${(box.xmax - box.xmin) / 10}%`;
+                el.style.height = `${(box.ymax - box.ymin) / 10}%`;
+
+                // Set selection glow and handle cursors
+                if (isSelected) {
+                    el.classList.add('ring-2', 'ring-white', 'shadow-2xl', 'cursor-move');
+                }
+
+                // Inner content layout (Title badge, desc prompt text)
+                const content = document.createElement('div');
+                content.className = 'w-full h-full p-1.5 flex flex-col justify-between overflow-hidden relative select-none';
+                
+                // Top row with Category Badge and Delete Action
+                const header = document.createElement('div');
+                header.className = 'flex items-center justify-between pointer-events-none';
+                
+                const badge = document.createElement('span');
+                badge.className = `text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
+                    isText ? 'bg-orange-600 text-white' : 'bg-teal-600 text-white'
+                }`;
+                badge.innerText = isText ? `text: "${box.text || ''}"` : 'obj';
+                header.appendChild(badge);
+
+                if (isSelected) {
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'p-0.5 bg-red-600 hover:bg-red-500 text-white rounded pointer-events-auto transition-colors shadow';
+                    delBtn.innerHTML = `<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`;
+                    delBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        deleteBox(box.id);
+                    };
+                    header.appendChild(delBtn);
+                }
+                content.appendChild(header);
+
+                // Box description text at bottom of box
+                const desc = document.createElement('p');
+                desc.className = 'text-[9px] text-zinc-200 font-medium leading-snug tracking-normal truncate drop-shadow';
+                desc.innerText = box.desc || (isText ? 'Ingen stil...' : 'Ingen beskrivning...');
+                content.appendChild(desc);
+
+                el.appendChild(content);
+
+                // If selected, inject the 4 corner resize handles
+                if (isSelected) {
+                    const corners = ['tl', 'tr', 'bl', 'br'];
+                    corners.forEach(cor => {
+                        const handle = document.createElement('div');
+                        handle.className = `resize-handle absolute w-3 h-3 rounded-full border-2 border-white z-40 transition-transform hover:scale-125 ${
+                            isText ? 'bg-orange-500' : 'bg-teal-500'
+                        }`;
+                        handle.dataset.corner = cor;
+
+                        // Position corner nodes
+                        if (cor === 'tl') { handle.style.top = '-6px'; handle.style.left = '-6px'; handle.style.cursor = 'nwse-resize'; }
+                        else if (cor === 'tr') { handle.style.top = '-6px'; handle.style.right = '-6px'; handle.style.cursor = 'nesw-resize'; }
+                        else if (cor === 'bl') { handle.style.bottom = '-6px'; handle.style.left = '-6px'; handle.style.cursor = 'nesw-resize'; }
+                        else if (cor === 'br') { handle.style.bottom = '-6px'; handle.style.right = '-6px'; handle.style.cursor = 'nwse-resize'; }
+
+                        el.appendChild(handle);
+                    });
+                }
+
+                layer.appendChild(el);
+            });
+        }
+
+        // Delete Box
+        function deleteBox(id) {
+            boxes = boxes.filter(b => b.id !== id);
+            if (selectedBoxId === id) selectedBoxId = null;
+            renderBoxesOnCanvas();
+            updateJsonPreview();
+            showToast("Box raderad", "Bounding boxen har tagits bort från kompositionen.", "amber");
+        }
+
+        function clearAllBoxes() {
+            if (boxes.length === 0) return;
+            boxes = [];
+            selectedBoxId = null;
+            renderBoxesOnCanvas();
+            updateJsonPreview();
+            showToast("Ritning rensad", "Alla bounding boxes på ritytan har raderats.", "amber");
+        }
+
+        // Modal Box Specifier controller
+        function openBoxModal(coords) {
+            modalBoxCoords = coords;
+            modalBoxType = selectedDrawingTool;
+
+            document.getElementById('modal-desc').value = "";
+            document.getElementById('modal-text-value').value = "";
+            document.getElementById('modal-coord-text').innerText = `[${coords.join(', ')}]`;
+
+            setModalBoxType(modalBoxType);
+            document.getElementById('modal-box-detail').classList.remove('hidden');
+        }
+
+        function setModalBoxType(type) {
+            modalBoxType = type;
+            const btnObj = document.getElementById('modal-type-obj');
+            const btnText = document.getElementById('modal-type-text');
+            const textGroup = document.getElementById('modal-text-group');
+
+            if (type === 'obj') {
+                btnObj.className = "py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 bg-teal-500/10 border-teal-500/50 text-teal-300";
+                btnText.className = "py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 border-zinc-800 text-zinc-400 hover:text-zinc-300";
+                textGroup.classList.add('hidden');
+            } else {
+                btnObj.className = "py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 border-zinc-800 text-zinc-400 hover:text-teal-300";
+                btnText.className = "py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 bg-orange-500/10 border-orange-500/50 text-orange-300";
+                textGroup.classList.remove('hidden');
+            }
+        }
+
+        function cancelBoxModal() {
+            document.getElementById('modal-box-detail').classList.add('hidden');
+            modalBoxCoords = null;
+        }
+
+        function saveBoxModal() {
+            const desc = document.getElementById('modal-desc').value.trim();
+            const textVal = document.getElementById('modal-text-value').value.trim();
+
+            if (modalBoxType === 'text' && !textVal) {
+                showToast("Text saknas", "Du måste skriva en textsträng för renderade textboxar.", "red");
+                return;
+            }
+
+            const newBox = {
+                id: Date.now(),
+                type: modalBoxType,
+                ymin: modalBoxCoords[0],
+                xmin: modalBoxCoords[1],
+                ymax: modalBoxCoords[2],
+                xmax: modalBoxCoords[3],
+                desc: desc || "",
+                text: modalBoxType === 'text' ? textVal : undefined
+            };
+
+            boxes.push(newBox);
+            selectedBoxId = newBox.id; // automatically highlight new box
+            
+            document.getElementById('modal-box-detail').classList.add('hidden');
+            renderBoxesOnCanvas();
+            updateJsonPreview();
+            
+            showToast("Box skapad", `Lade till en ny ${modalBoxType}-ruta till ritytan.`, "emerald");
+        }
+
+        // Serialization: Save active workspace state to a local file
+        function saveProjectToDisk() {
+            const projectState = {
+                appVersion: "Ideogram-V4-Studio-Pro-1.0",
+                timestamp: new Date().toISOString(),
+                activeSection: activeSection,
+                generateMode: generateMode,
+                resolution: document.getElementById('gen-resolution').value,
+                speed: document.getElementById('gen-speed').value,
+                remixResolution: document.getElementById('remix-resolution').value,
+                remixWeight: document.getElementById('remix-weight').value,
+                describeBbox: document.getElementById('describe-bbox').checked,
+                global: {
+                    highLevelDesc: document.getElementById('global-high-level').value,
+                    backgroundDesc: document.getElementById('global-background').value,
+                    styleType: document.getElementById('style-type').value,
+                    styleValue: document.getElementById('global-style-val').value,
+                    medium: document.getElementById('global-medium').value,
+                    aesthetics: document.getElementById('global-aesthetics').value,
+                    lighting: document.getElementById('global-lighting').value,
+                    photoSpec: document.getElementById('global-photo-spec').value,
+                    artSpec: document.getElementById('global-art-spec').value
+                },
+                boxes: boxes
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectState, null, 4));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href",     dataStr);
+            dlAnchor.setAttribute("download", `ideogram_v4_proj_${Math.floor(Date.now() / 1000)}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+
+            showToast("Projekt sparat", "Alla ritytor och specifikationer exporterades framgångsrikt.", "emerald");
+        }
+
+        // Deserialization: Load project state from local disk back into memory
+        function loadProjectFromDisk(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    
+                    // Restore global parameters
+                    if (parsed.resolution) document.getElementById('gen-resolution').value = parsed.resolution;
+                    if (parsed.speed) document.getElementById('gen-speed').value = parsed.speed;
+                    if (parsed.remixResolution) document.getElementById('remix-resolution').value = parsed.remixResolution;
+                    if (parsed.remixWeight) {
+                        document.getElementById('remix-weight').value = parsed.remixWeight;
+                        document.getElementById('weight-val').innerText = parsed.remixWeight + "%";
+                    }
+                    if (parsed.describeBbox !== undefined) document.getElementById('describe-bbox').checked = parsed.describeBbox;
+
+                    const s = parsed.global;
+                    if (s) {
+                        document.getElementById('global-high-level').value = s.highLevelDesc || "";
+                        document.getElementById('global-background').value = s.backgroundDesc || "";
+                        document.getElementById('style-type').value = s.styleType || "photo";
+                        document.getElementById('global-style-val').value = s.styleValue || "";
+                        document.getElementById('global-medium').value = s.medium || "";
+                        document.getElementById('global-aesthetics').value = s.aesthetics || "";
+                        document.getElementById('global-lighting').value = s.lighting || "";
+                        document.getElementById('global-photo-spec').value = s.photoSpec || "";
+                        document.getElementById('global-art-spec').value = s.artSpec || "";
+                        toggleStyleInput();
+                    }
+
+                    // Restore boxes array & redraw visual canvas layers
+                    boxes = parsed.boxes || [];
+                    deselectAllBoxes();
+                    setGenerateMode(parsed.generateMode || 'drawing');
+                    renderBoxesOnCanvas();
+                    updateCenterView();
+
+                    showToast("Inläsning klar!", "Ideogram 4.0 Studio återställdes framgångsrikt.", "emerald");
+
+                } catch (err) {
+                    showToast("Import misslyckades", err.message, "red");
+                }
+            };
+            reader.readAsText(file);
+            input.value = ""; // Clear file selector target
+        }
+
+        // Handle uploaded image files
+        function handleFileSelect(input, prefix) {
+            const file = input.files[0];
+            if (file) {
+                processImageFile(file, prefix);
+            }
+        }
+
+        function handleFileDrop(e, prefix) {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                processImageFile(file, prefix);
+            }
+        }
+
+        function processImageFile(file, prefix) {
+            if (!file.type.match('image.*')) {
+                showToast("Felaktigt format", "Vänligen ladda upp en PNG, JPG eller WebP bild.", "red");
+                return;
+            }
+
+            if (prefix === 'remix') {
+                uploadedRemixFile = file;
+            } else {
+                uploadedDescribeFile = file;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById(`${prefix}-preview`).src = e.target.result;
+                document.getElementById(`${prefix}-preview-container`).classList.remove('hidden');
+                
+                // Mirror the file preview inside our center adaptive studio panel
+                if (prefix === 'remix') {
+                    const centerImg = document.getElementById('center-remix-preview');
+                    const centerPlaceholder = document.getElementById('center-remix-placeholder');
+                    centerImg.src = e.target.result;
+                    centerImg.classList.remove('hidden');
+                    centerPlaceholder.classList.add('hidden');
+                } else if (prefix === 'describe') {
+                    const centerImg = document.getElementById('center-describe-preview');
+                    const centerPlaceholder = document.getElementById('center-describe-placeholder');
+                    centerImg.src = e.target.result;
+                    centerImg.classList.remove('hidden');
+                    centerPlaceholder.classList.add('hidden');
+                }
+
+                showToast("Bild laddad", "Bildfilen har sparats lokalt i webbappen.", "emerald");
+                updateCenterView();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearFile(prefix) {
+            if (prefix === 'remix') {
+                uploadedRemixFile = null;
+                document.getElementById('remix-file').value = "";
+                document.getElementById('center-remix-preview').src = "";
+                document.getElementById('center-remix-preview').classList.add('hidden');
+                document.getElementById('center-remix-placeholder').classList.remove('hidden');
+            } else {
+                uploadedDescribeFile = null;
+                document.getElementById('describe-file').value = "";
+                document.getElementById('center-describe-preview').src = "";
+                document.getElementById('center-describe-preview').classList.add('hidden');
+                document.getElementById('center-describe-placeholder').classList.remove('hidden');
+            }
+            document.getElementById(`${prefix}-preview-container`).classList.add('hidden');
+            document.getElementById(`${prefix}-preview`).src = "";
+            updateCenterView();
+        }
+
+        // JSON prompt builder aligned to Ideogram 4.0 structured prompt payload contract
+        function compileJsonPrompt() {
+            // Build elements structure
+            const elements = boxes.map(b => {
+                const item = {
+                    type: b.type,
+                    desc: b.desc || "",
+                    bbox: [b.ymin, b.xmin, b.ymax, b.xmax]
+                };
+                if (b.type === 'text') {
+                    item.text = b.text;
+                }
+                return item;
+            });
+
+            const styleType = document.getElementById('style-type').value;
+            const styleSpec = styleType === 'photo' 
+                ? document.getElementById('global-photo-spec').value.trim()
+                : document.getElementById('global-art-spec').value.trim();
+
+            const promptObj = {
+                compositional_deconstruction: {
+                    background: {
+                        desc: document.getElementById('global-background').value.trim() || "A solid studio background"
+                    },
+                    elements: elements
+                },
+                global: {
+                    highLevelDesc: document.getElementById('global-high-level').value.trim() || "A beautifully styled professional image",
+                    styleType: styleType,
+                    styleValue: document.getElementById('global-style-val').value.trim() || "",
+                    medium: document.getElementById('global-medium').value.trim() || "",
+                    aesthetics: document.getElementById('global-aesthetics').value.trim() || "",
+                    lighting: document.getElementById('global-lighting').value.trim() || ""
+                }
+            };
+
+            // Map conditional keys photo/artStyle
+            if (styleType === 'photo') {
+                if (styleSpec) promptObj.global.photo = styleSpec;
+            } else {
+                if (styleSpec) promptObj.global.artStyle = styleSpec;
+            }
+
+            return promptObj;
+        }
+
+        function updateJsonPreview() {
+            const preview = document.getElementById('json-preview');
+            const compiled = compileJsonPrompt();
+            preview.innerText = JSON.stringify(compiled, null, 2);
+        }
+
+        function copyCompiledJsonToClipboard() {
+            const compiled = compileJsonPrompt();
+            const tempInput = document.createElement("textarea");
+            tempInput.value = JSON.stringify(compiled, null, 2);
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast("Kopierat!", "JSON-promptern har sparats till ditt urklipp.", "indigo");
+        }
+
+        // Network dispatcher triggers current action
+        function triggerGeneration() {
+            const key = document.getElementById('api-key').value.trim();
+            const proxy = document.getElementById('api-proxy').value.trim();
+
+            // Validate requirements
+            if (!sandboxMode && !key) {
+                showToast("API-nyckel saknas", "Du måste skriva din Ideogram API-nyckel i sidfoten innan du kan generera.", "red");
+                return;
+            }
+
+            // Switch to output tab & reveal loader
+            switchCenterTab('tab-output');
+            document.getElementById('output-empty').classList.add('hidden');
+            document.getElementById('output-media-container').classList.add('hidden');
+            
+            const loader = document.getElementById('output-loader');
+            const loaderText = document.getElementById('output-loader-text');
+            loader.classList.remove('hidden');
+
+            if (activeSection === 'generate') {
+                loaderText.innerText = "Sänder Generation-begäran till Ideogram 4.0...";
+                executeGenerateRequest(key, proxy);
+            } 
+            else if (activeSection === 'remix') {
+                if (!uploadedRemixFile && !sandboxMode) {
+                    showToast("Källbild saknas", "Du måste ladda upp en Remix-bild i listan till vänster.", "red");
+                    abortOutputLoading();
+                    return;
+                }
+                loaderText.innerText = "Sänder Remix-begäran till Ideogram 4.0...";
+                executeRemixRequest(key, proxy);
+            } 
+            else if (activeSection === 'describe') {
+                if (!uploadedDescribeFile && !sandboxMode) {
+                    showToast("Bild saknas", "Du måste välja en bild att analysera (Describe) först.", "red");
+                    abortOutputLoading();
+                    return;
+                }
+                loaderText.innerText = "Laddar upp bild och analyserar layout med Ideogram 4.0...";
+                executeDescribeRequest(key, proxy);
+            }
+        }
+
+        function abortOutputLoading() {
+            document.getElementById('output-loader').classList.add('hidden');
+            document.getElementById('output-empty').classList.remove('hidden');
+            switchCenterTab('tab-editor');
+        }
+
+        // API implementation: Image Generation Endpoint
+        function executeGenerateRequest(key, proxy) {
+            if (sandboxMode) {
+                setTimeout(() => {
+                    const mockUrl = `https://placehold.co/1024x1024/09090b/e4e4e7?text=Ideogram+4.0+Genererad+Simulering`;
+                    showSuccessOutput(mockUrl);
+                    showToast("Simulering klar", "Bilder simulerades framgångsrikt (Demo-läge).", "emerald");
+                }, 2000);
+                return;
+            }
+
+            let endpoint = "https://api.ideogram.ai/v1/ideogram-v4/generate";
+            if (proxy) {
+                endpoint = proxy.endsWith('/') ? proxy + endpoint : proxy + '/' + endpoint;
+            }
+
+            const formData = new FormData();
+            if (generateMode === 'prompt') {
+                const textPrompt = document.getElementById('prompt-text').value.trim();
+                if (!textPrompt) {
+                    showToast("Prompt saknas", "Vänligen fyll i en prompt för att kunna generera bild.", "red");
+                    abortOutputLoading();
+                    return;
+                }
+                formData.append('text_prompt', textPrompt);
+            } else {
+                formData.append('json_prompt', JSON.stringify(compileJsonPrompt()));
+            }
+
+            formData.append('resolution', document.getElementById('gen-resolution').value);
+            formData.append('rendering_speed', document.getElementById('gen-speed').value);
+
+            fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Api-Key": key
+                },
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) return res.json().then(err => { throw new Error(err.message || "Okänt API-fel."); });
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.data && data.data[0] && data.data[0].url) {
+                    showSuccessOutput(data.data[0].url);
+                    showToast("Generering klar!", "Din bild har ritats och hämtats.", "emerald");
+                } else {
+                    throw new Error("Kunde inte tyda API-svaret korrekt.");
+                }
+            })
+            .catch(err => {
+                showToast("Generering misslyckades", err.message, "red");
+                abortOutputLoading();
+            });
+        }
+
+        // API implementation: Image Remix Endpoint
+        function executeRemixRequest(key, proxy) {
+            if (sandboxMode) {
+                setTimeout(() => {
+                    const mockUrl = `https://placehold.co/1024x1024/09090b/e4e4e7?text=Ideogram+4.0+Remix+Simulering`;
+                    showSuccessOutput(mockUrl);
+                    showToast("Remix klar", "Bilder simulerades framgångsrikt (Demo-läge).", "emerald");
+                }, 2500);
+                return;
+            }
+
+            let endpoint = "https://api.ideogram.ai/v1/ideogram-v4/remix";
+            if (proxy) {
+                endpoint = proxy.endsWith('/') ? proxy + endpoint : proxy + '/' + endpoint;
+            }
+
+            const formData = new FormData();
+            formData.append('image_file', uploadedRemixFile);
+            formData.append('text_prompt', document.getElementById('remix-prompt').value.trim() || "A stylized artistic remix");
+            formData.append('image_weight', parseInt(document.getElementById('remix-weight').value));
+            formData.append('resolution', document.getElementById('remix-resolution').value);
+
+            fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Api-Key": key
+                },
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) return res.json().then(err => { throw new Error(err.message || "Okänt API-fel."); });
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.data && data.data[0] && data.data[0].url) {
+                    showSuccessOutput(data.data[0].url);
+                    showToast("Remix klar!", "Din bild har remixats och hämtats.", "emerald");
+                } else {
+                    throw new Error("Kunde inte tyda API-svaret.");
+                }
+            })
+            .catch(err => {
+                showToast("Remix misslyckades", err.message, "red");
+                abortOutputLoading();
+            });
+        }
+
+        // API implementation: Image Describe Endpoint
+        function executeDescribeRequest(key, proxy) {
+            if (sandboxMode) {
+                setTimeout(() => {
+                    // Simulate an analyzed response from Describe endpoint with boxes
+                    lastDescribedResponse = {
+                        compositional_deconstruction: {
+                            background: { desc: "Ett mörkt tech rum" },
+                            elements: [
+                                { type: "obj", desc: "En röd datorskärm", bbox: [200, 300, 600, 700] },
+                                { type: "text", text: "LIVE", desc: "Glow text i gult", bbox: [220, 450, 300, 550] }
+                            ]
+                        },
+                        global: {
+                            highLevelDesc: "Ett futuristiskt datorrum med neonljus",
+                            styleType: "photo",
+                            styleValue: "Neon photography",
+                            medium: "Kamerafoton",
+                            aesthetics: "Retro cyberpunk",
+                            lighting: "Glödande neon"
+                        }
+                    };
+
+                    showSuccessOutput(document.getElementById('describe-preview').src, true);
+                    showToast("Analys klar!", "Beskrivningen har simulerats. Du kan nu backportera boxarna till ritytan!", "emerald");
+                }, 2000);
+                return;
+            }
+
+            let endpoint = "https://api.ideogram.ai/v1/ideogram-v4/describe";
+            if (proxy) {
+                endpoint = proxy.endsWith('/') ? proxy + endpoint : proxy + '/' + endpoint;
+            }
+
+            const formData = new FormData();
+            formData.append('image_file', uploadedDescribeFile);
+            formData.append('include_bbox', document.getElementById('describe-bbox').checked);
+
+            fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Api-Key": key
+                },
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) return res.json().then(err => { throw new Error(err.message || "Okänt API-fel."); });
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.json_prompt) {
+                    // Save response
+                    lastDescribedResponse = data.json_prompt;
+                    
+                    // Show describe preview
+                    showSuccessOutput(document.getElementById('describe-preview').src, true);
+                    showToast("Analys klar!", "Bildens layout har analyserats med Ideogram 4.0.", "emerald");
+                } else {
+                    throw new Error("Kunde inte tyda layouten från analysen.");
+                }
+            })
+            .catch(err => {
+                showToast("Describe misslyckades", err.message, "red");
+                abortOutputLoading();
+            });
+        }
+
+        // Render success image in output view
+        function showSuccessOutput(imgUrl, isDescribeResult = false) {
+            document.getElementById('output-loader').classList.add('hidden');
+            
+            const img = document.getElementById('output-image');
+            img.src = imgUrl;
+
+            const dl = document.getElementById('output-btn-download');
+            dl.href = imgUrl;
+
+            const backportBtn = document.getElementById('output-btn-loadboxes');
+            if (isDescribeResult && lastDescribedResponse) {
+                backportBtn.classList.remove('hidden');
+            } else {
+                backportBtn.classList.add('hidden');
+            }
+
+            document.getElementById('output-media-container').classList.remove('hidden');
+        }
+
+        // Backports described boxes directly back into editor workspace
+        function loadDescribedBoxesBackToCanvas() {
+            if (!lastDescribedResponse) return;
+
+            try {
+                const s = lastDescribedResponse.global;
+                if (s) {
+                    document.getElementById('global-high-level').value = s.highLevelDesc || "";
+                    document.getElementById('global-background').value = lastDescribedResponse.compositional_deconstruction?.background?.desc || "";
+                    document.getElementById('style-type').value = s.styleType || "photo";
+                    document.getElementById('global-style-val').value = s.styleValue || "";
+                    document.getElementById('global-medium').value = s.medium || "";
+                    document.getElementById('global-aesthetics').value = s.aesthetics || "";
+                    document.getElementById('global-lighting').value = s.lighting || "";
+                    if (s.styleType === 'photo') {
+                        document.getElementById('global-photo-spec').value = s.photo || "";
+                    } else {
+                        document.getElementById('global-art-spec').value = s.artStyle || "";
+                    }
+                    toggleStyleInput();
+                }
+
+                // Map boxes
+                const elements = lastDescribedResponse.compositional_deconstruction?.elements || [];
+                boxes = elements.map((el, index) => {
+                    return {
+                        id: Date.now() + index,
+                        type: el.type || 'obj',
+                        ymin: el.bbox[0],
+                        xmin: el.bbox[1],
+                        ymax: el.bbox[2],
+                        xmax: el.bbox[3],
+                        desc: el.desc || "",
+                        text: el.text || ""
+                    };
+                });
+
+                selectedBoxId = null;
+                renderBoxesOnCanvas();
+                setGenerateMode('drawing');
+                switchCenterTab('tab-editor');
+
+                showToast("Boxar inlästa!", "Det beskrivna motivet och dess boxar ligger nu på ritytan.", "emerald");
+
+            } catch (err) {
+                showToast("Fel vid inläsning", err.message, "red");
+            }
+        }
+
+        // Toast message engine (Non-intrusive alert box replacement)
+        function showToast(title, body, color = "indigo") {
+            const container = document.getElementById('toast-layer');
+            const toast = document.createElement('div');
+
+            const colors = {
+                indigo: "bg-indigo-950/90 border-indigo-500/50 text-indigo-200",
+                emerald: "bg-emerald-950/90 border-emerald-500/50 text-emerald-200",
+                amber: "bg-amber-950/90 border-amber-500/50 text-amber-200",
+                red: "bg-red-950/90 border-red-500/50 text-red-200"
+            };
+
+            const selectedColor = colors[color] || colors.indigo;
+
+            toast.className = `p-4 rounded-xl border-2 shadow-2xl backdrop-blur-md flex items-start gap-3 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto max-w-sm ${selectedColor}`;
+            toast.innerHTML = `
+                <div class="space-y-1">
+                    <h5 class="font-extrabold text-xs tracking-wide uppercase">${title}</h5>
+                    <p class="text-[11px] leading-relaxed opacity-90">${body}</p>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Trigger animation frame
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // Self cleanup after duration
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-1');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4500);
+        }
+    </script>
+</body>
+</html>
