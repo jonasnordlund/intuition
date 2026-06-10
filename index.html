@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intuition</title>
-    <!-- Google Fonts Inter -->
+    <title>Intuition R1 - Ideogram v4 Companion</title>
+    <!-- Google Fonts Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -23,480 +23,212 @@
         }
     </script>
     <style>
-        /* Smooth transitions for accordion panels */
-        .accordion-content {
-            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                        opacity 0.3s ease, 
-                        padding 0.3s ease;
-        }
         /* Custom grid background for the canvas */
         .grid-bg {
             background-color: #09090b;
             background-image: 
-                linear-gradient(to right, rgba(63, 63, 70, 0.15) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(63, 63, 70, 0.15) 1px, transparent 1px),
-                linear-gradient(to right, rgba(63, 63, 70, 0.35) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(63, 63, 70, 0.35) 1px, transparent 1px);
+                linear-gradient(to right, rgba(63, 63, 70, 0.12) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(63, 63, 70, 0.12) 1px, transparent 1px),
+                linear-gradient(to right, rgba(63, 63, 70, 0.3) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(63, 63, 70, 0.3) 1px, transparent 1px);
             background-size: 10px 10px, 10px 10px, 100px 100px, 100px 100px;
         }
-        /* Hide scrollbars for aesthetic panels but allow scroll */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        /* Custom scrollbar adjustments for premium feel */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
         }
     </style>
 </head>
-<body class="h-full flex flex-col font-sans select-none overflow-hidden">
+<body class="h-full flex flex-col font-sans select-none overflow-hidden bg-zinc-950">
 
-    <!-- Main App Container -->
+    <!-- Main App Layout Workspace -->
     <div class="flex flex-1 h-full overflow-hidden">
         
-        <!-- SIDEBAR LEFT: Accordion settings & Credentials -->
+        <!-- COLUMN 1: LEFT SIDEBAR (Configuration, Specifications & Projects) -->
         <aside class="w-80 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0 overflow-hidden z-30">
-            <!-- Studio Branding Header -->
-            <div class="p-4 border-b border-zinc-800 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center font-extrabold text-white shadow-md shadow-purple-500/20">I4</div>
-                    <div>
-                        <h1 class="font-extrabold text-sm tracking-wide text-zinc-100">INTUITION v1</h1>
-                        <p class="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase">Ideogram Studio</p>
-                    </div>
+            <!-- Branding Header -->
+            <div class="p-4 border-b border-zinc-800 flex items-center gap-2.5 shrink-0">
+                <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center font-extrabold text-white shadow-md shadow-indigo-500/20">In</div>
+                <div>
+                    <h1 class="font-extrabold text-sm tracking-wide text-zinc-100 uppercase">Intuition R1</h1>
+                    <p class="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase leading-none">Ideogram v4 Companion</p>
                 </div>
-                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-bold">V4.0 API</span>
             </div>
 
-            <!-- Scrollable Settings Container -->
-            <div class="flex-1 overflow-y-auto no-scrollbar">
+            <!-- Scrollable Specifications Settings Form -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                 
-                <!-- CATEGORY 1: GENERATE (ACCORDION) -->
-                <div class="border-b border-zinc-800">
-                    <button onclick="toggleAccordion('acc-generate')" class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-zinc-800/40 transition-colors">
-                        <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-300">
-                            <span class="h-2 w-2 rounded-full bg-purple-500"></span> Generate
-                        </span>
-                        <svg id="arrow-acc-generate" class="w-4 h-4 text-zinc-500 transition-transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div id="acc-generate" class="accordion-content overflow-hidden max-h-[1000px] opacity-100 p-4 space-y-4 border-t border-zinc-950 bg-zinc-900/40">
-                        <!-- Mode Selector (Prompt vs Drawing) -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Method</label>
-                            <div class="grid grid-cols-2 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850">
-                                <button onclick="setGenerateMode('prompt')" id="btn-mode-prompt" class="py-1.5 px-3 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200">Text Prompt</button>
-                                <button onclick="setGenerateMode('drawing')" id="btn-mode-drawing" class="py-1.5 px-3 rounded-md text-xs font-semibold transition-all bg-purple-600 text-white shadow-sm">Drawing (JSON)</button>
-                            </div>
-                        </div>
-
-                        <!-- Prompt Input (Text mode only) -->
-                        <div id="input-prompt-group" class="space-y-1.5 hidden">
-                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Magic Prompt (Natural Language)</label>
-                            <textarea id="prompt-text" placeholder="A happy man on the beach at sunset, cinematic..." class="w-full h-24 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-100 placeholder-zinc-650 resize-none"></textarea>
-                        </div>
-
-                        <!-- Resolution Combobox -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Resolution</label>
-                            <select id="gen-resolution" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-300">
-                                <option value="2048x2048">2048x2048 (1:1 Square)</option>
-                                <option value="2560x1440">2560x1440 (16:9 Landscape)</option>
-                                <option value="1440x2560">1440x2560 (9:16 Portrait)</option>
-                                <option value="2304x1728">2304x1728 (4:3 Landscape)</option>
-                                <option value="1728x2304">1728x2304 (3:4 Portrait)</option>
-                                <option value="2880x1440">2880x1440 (2:1 Wide)</option>
-                                <option value="3168x1296">3168x1296 (22:9 Banner)</option>
-                            </select>
-                        </div>
-
-                        <!-- Rendering Speed Combobox -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Rendering Speed</label>
-                            <select id="gen-speed" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-300">
-                                <option value="DEFAULT" selected>DEFAULT (High Quality)</option>
-                                <option value="QUALITY">QUALITY (Highest Quality)</option>
-                                <option value="TURBO">TURBO (Fast Generation)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CATEGORY 2: REMIX (ACCORDION) -->
-                <div class="border-b border-zinc-800">
-                    <button onclick="toggleAccordion('acc-remix')" class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-zinc-800/40 transition-colors">
-                        <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400">
-                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Remix
-                        </span>
-                        <svg id="arrow-acc-remix" class="w-4 h-4 text-zinc-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div id="acc-remix" class="accordion-content overflow-hidden max-h-0 opacity-0 space-y-4 bg-zinc-900/40">
-                        <!-- Remix Image Dropzone -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Source Image (Drag & Drop)</label>
-                            <div id="remix-dropzone" ondragover="event.preventDefault()" ondrop="handleFileDrop(event, 'remix')" onclick="document.getElementById('remix-file').click()" class="border-2 border-dashed border-zinc-800 hover:border-emerald-500/50 bg-zinc-950 rounded-lg p-5 text-center cursor-pointer transition-all relative overflow-hidden group">
-                                <input type="file" id="remix-file" class="hidden" accept="image/*" onchange="handleFileSelect(this, 'remix')">
-                                <div id="remix-preview-container" class="hidden absolute inset-0 z-10 bg-zinc-950/95 flex items-center justify-center p-1">
-                                    <img id="remix-preview" src="" class="max-h-full rounded object-contain">
-                                    <button onclick="event.stopPropagation(); clearFile('remix')" class="absolute top-2 right-2 bg-red-500/20 hover:bg-red-550 text-red-300 hover:text-white p-1 rounded-full border border-red-500/30 transition-all text-xs">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </div>
-                                <div class="space-y-1">
-                                    <svg class="w-8 h-8 text-zinc-500 mx-auto group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    <p class="text-xs font-semibold text-zinc-300">Drop image here</p>
-                                    <p class="text-[10px] text-zinc-500">or click to browse</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Remix Prompt -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Remix Instructions</label>
-                            <textarea id="remix-prompt" oninput="updateCenterView()" placeholder="Transform the person into a 3D animated character..." class="w-full h-20 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-zinc-100 placeholder-zinc-650 resize-none"></textarea>
-                        </div>
-
-                        <!-- Image Weight Slider -->
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between items-center text-xs">
-                                <label class="font-semibold text-zinc-400 uppercase tracking-wider">Image Weight</label>
-                                <span id="weight-val" class="font-mono text-emerald-400 font-bold">40%</span>
-                            </div>
-                            <input type="range" id="remix-weight" min="1" max="100" value="40" oninput="document.getElementById('weight-val').innerText = this.value + '%'" class="w-full h-1 bg-zinc-950 rounded-lg appearance-none cursor-pointer accent-emerald-500">
-                        </div>
-
-                        <!-- Remix Resolution -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Resolution</label>
-                            <select id="remix-resolution" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-zinc-300">
-                                <option value="2048x2048" selected>2048x2048 (1:1 Square)</option>
-                                <option value="2560x1440">2560x1440 (16:9 Landscape)</option>
-                                <option value="1440x2560">1440x2560 (9:16 Portrait)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CATEGORY 3: DESCRIBE (ACCORDION) -->
-                <div class="border-b border-zinc-800">
-                    <button onclick="toggleAccordion('acc-describe')" class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-zinc-800/40 transition-colors">
-                        <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400">
-                            <span class="h-2 w-2 rounded-full bg-cyan-500"></span> Describe
-                        </span>
-                        <svg id="arrow-acc-describe" class="w-4 h-4 text-zinc-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div id="acc-describe" class="accordion-content overflow-hidden max-h-0 opacity-0 space-y-4 bg-zinc-900/40">
-                        <!-- Describe Image Dropzone -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Image to Analyze (Describe)</label>
-                            <div id="describe-dropzone" ondragover="event.preventDefault()" ondrop="handleFileDrop(event, 'describe')" onclick="document.getElementById('describe-file').click()" class="border-2 border-dashed border-zinc-800 hover:border-cyan-500/50 bg-zinc-950 rounded-lg p-5 text-center cursor-pointer transition-all relative overflow-hidden group">
-                                <input type="file" id="describe-file" class="hidden" accept="image/*" onchange="handleFileSelect(this, 'describe')">
-                                <div id="describe-preview-container" class="hidden absolute inset-0 z-10 bg-zinc-950/95 flex items-center justify-center p-1">
-                                    <img id="describe-preview" src="" class="max-h-full rounded object-contain">
-                                    <button onclick="event.stopPropagation(); clearFile('describe')" class="absolute top-2 right-2 bg-red-500/20 hover:bg-red-550 text-red-300 hover:text-white p-1 rounded-full border border-red-500/30 transition-all text-xs">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </div>
-                                <div class="space-y-1">
-                                    <svg class="w-8 h-8 text-zinc-500 mx-auto group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    <p class="text-xs font-semibold text-zinc-300">Drop image here</p>
-                                    <p class="text-[10px] text-zinc-500">or click to browse</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Include Bounding Boxes Checkbox -->
-                        <div class="flex items-center gap-2.5 p-1">
-                            <input type="checkbox" id="describe-bbox" checked class="w-4 h-4 rounded text-cyan-600 bg-zinc-950 border-zinc-800 focus:ring-cyan-500 focus:ring-offset-zinc-900">
-                            <label for="describe-bbox" class="text-xs font-semibold text-zinc-300 cursor-pointer select-none">Include bounding boxes (bbox)</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- STATE UTILITIES: Load/Save Projects -->
-                <div class="p-4 border-b border-zinc-800 space-y-2">
-                    <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Project Files</span>
+                <!-- Project file controls at the top for accessibility -->
+                <div class="space-y-2 pb-4 border-b border-zinc-800">
+                    <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Project Workspace</span>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="saveProjectToDisk()" class="py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-800 border border-zinc-850 text-zinc-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Save Project
+                        <button onclick="saveProjectToDisk()" class="py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow">
+                            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Save Project
                         </button>
-                        <button onclick="document.getElementById('import-file').click()" class="py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-800 border border-zinc-850 text-zinc-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Load Project
+                        <button onclick="document.getElementById('import-file').click()" class="py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow">
+                            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Load Project
                         </button>
                     </div>
                     <input type="file" id="import-file" class="hidden" accept=".json" onchange="loadProjectFromDisk(this)">
                 </div>
 
-            </div>
-
-            <!-- SIDEBAR LEFT FOOTER: Credentials Setup -->
-            <div class="p-4 border-t border-zinc-800 bg-zinc-950 space-y-3 shrink-0">
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Connection & Authentication</span>
-                    <button onclick="toggleSandboxMode()" id="sandbox-badge" class="text-[9px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold px-2 py-0.5 rounded-md hover:bg-emerald-500/20 transition-all">DEMO ACTIVE</button>
-                </div>
-                <!-- API Key -->
-                <div class="space-y-1">
-                    <input type="password" id="api-key" oninput="saveCredentials()" placeholder="Ideogram API Key" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-600">
-                </div>
-                <!-- Custom Proxy -->
-                <div class="space-y-1">
-                    <input type="text" id="api-proxy" oninput="saveCredentials()" placeholder="Alternative CORS Proxy (Optional)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-650">
-                    <span class="text-[9px] text-zinc-600 leading-none">Leave blank to send requests directly to the API.</span>
-                </div>
-            </div>
-        </aside>
-
-        <!-- CENTER PANEL: Dynamic workspace for Canvas, Remix and Describe -->
-        <main class="flex-1 bg-zinc-950 flex flex-col min-w-0 h-full relative">
-            
-            <!-- Workspace Tab Selector -->
-            <div class="bg-zinc-900 border-b border-zinc-800 px-6 py-2.5 flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-1">
-                    <button onclick="switchCenterTab('tab-editor')" id="tab-btn-editor" class="text-xs font-bold px-3 py-1.5 rounded-lg transition-all bg-zinc-800 text-white">Visual Editor</button>
-                    <button onclick="switchCenterTab('tab-output')" id="tab-btn-output" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all text-zinc-400 hover:text-zinc-200">Result & Output</button>
-                </div>
-                <div id="active-tool-badge" class="hidden text-xs bg-teal-500/10 text-teal-400 border border-teal-500/20 px-2.5 py-1 rounded-md font-semibold">
-                    Active Mode: Drawing Object
-                </div>
-            </div>
-
-            <!-- Editor Tab View -->
-            <div id="tab-editor" class="p-6 flex flex-col items-center justify-center space-y-6 flex-1 overflow-y-auto">
-                
-                <!-- 1. Generate Mode View -->
-                <div id="center-generate-view" class="w-full flex flex-col items-center space-y-6">
-                    <!-- If Prompt Mode is active, show this warning banner -->
-                    <div id="prompt-mode-canvas-banner" class="w-full max-w-2xl bg-indigo-950/30 border border-indigo-900/50 rounded-xl p-4 flex gap-3">
-                        <span class="text-indigo-400 shrink-0">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </span>
-                        <div>
-                            <h4 class="font-bold text-sm text-indigo-300">Natural Language Mode Active</h4>
-                            <p class="text-xs text-indigo-400/80 leading-normal mt-0.5">You are currently creating images with plain text using Magic Prompt. To draw Bounding Boxes and design your image with absolute precision, switch to <b>Drawing</b> under the Generate category in the left sidebar!</p>
-                        </div>
-                    </div>
-
-                    <!-- The Interactive Canvas Container -->
-                    <div id="canvas-workspace" class="hidden flex flex-col items-center space-y-3 w-full max-w-[min(70vh,750px)]">
-                        <!-- Drawing Canvas Controls toolbar -->
-                        <div class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 flex items-center justify-between shadow-lg">
-                            <div class="flex items-center gap-1.5">
-                                <button onclick="setSelectedDrawingTool('obj')" id="tool-btn-obj" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/40 transition-all">
-                                    <span class="h-2 w-2 rounded-full bg-teal-400"></span> Draw Object Box (obj)
-                                </button>
-                                <button onclick="setSelectedDrawingTool('text')" id="tool-btn-text" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">
-                                    <span class="h-2 w-2 rounded-full bg-orange-500"></span> Draw Text Box (text)
-                                </button>
-                            </div>
-                            <button onclick="clearAllBoxes()" class="text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-550/10 px-2.5 py-1.5 rounded-lg border border-transparent hover:border-red-500/20 transition-all flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                Clear Canvas
-                            </button>
-                        </div>
-
-                        <!-- Canvas Body -->
-                        <div class="relative w-full aspect-square bg-zinc-950 border-2 border-zinc-800 rounded-xl overflow-hidden shadow-2xl select-none grid-bg group" id="drawing-canvas" onmousedown="onCanvasMouseDown(event)">
-                            <!-- Overlay instructions when canvas is empty -->
-                            <div id="canvas-empty-hint" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-6 text-center space-y-2 z-0">
-                                <svg class="w-12 h-12 text-zinc-700 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                                <span class="text-sm font-semibold text-zinc-400">Drawing Canvas is Empty</span>
-                                <span class="text-xs text-zinc-600 max-w-xs">Click and drag with the mouse or your finger on the surface to draw a rectangular bounding box!</span>
-                            </div>
-
-                            <!-- Inside this box we inject relative-positioned rectangles dynamically -->
-                            <div id="boxes-layer" class="absolute inset-0 z-10 pointer-events-none"></div>
-
-                            <!-- Drag Preview Box -->
-                            <div id="drag-preview" class="absolute border-2 border-dashed border-white/60 bg-white/10 hidden pointer-events-none z-20"></div>
-                        </div>
-
-                        <div class="text-center">
-                            <p class="text-[11px] text-zinc-500">Coordinates are normalized to a 1000x1000 grid in accordance with Ideogram v4 specifications.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Remix Mode View -->
-                <div id="center-remix-view" class="w-full max-w-2xl flex flex-col items-center space-y-6 hidden">
-                    <div class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center space-y-4 shadow-xl">
-                        <h3 class="font-bold text-sm text-zinc-400 uppercase tracking-wider">Source Image for Remix</h3>
-                        <div class="w-full aspect-[4/3] max-h-[300px] bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center overflow-hidden relative">
-                            <img id="center-remix-preview" src="" class="max-h-full max-w-full object-contain hidden">
-                            <div id="center-remix-placeholder" class="text-zinc-600 flex flex-col items-center gap-2">
-                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                <span class="text-xs">No image loaded. Drop or select an image in the Remix panel to the left.</span>
-                            </div>
-                        </div>
-                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-left">
-                            <span class="text-[10px] font-bold uppercase text-emerald-400 tracking-wider block mb-1">Remix Instructions (Prompt)</span>
-                            <p id="center-remix-prompt-text" class="text-xs text-zinc-300 italic">No remix prompt provided...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. Describe Mode View -->
-                <div id="center-describe-view" class="w-full max-w-2xl flex flex-col items-center space-y-6 hidden">
-                    <div class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center space-y-4 shadow-xl">
-                        <h3 class="font-bold text-sm text-zinc-400 uppercase tracking-wider">Image to Analyze (Describe)</h3>
-                        <div class="w-full aspect-[4/3] max-h-[300px] bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center overflow-hidden relative">
-                            <img id="center-describe-preview" src="" class="max-h-full max-w-full object-contain hidden">
-                            <div id="center-describe-placeholder" class="text-zinc-600 flex flex-col items-center gap-2">
-                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                                <span class="text-xs">No image loaded. Drop or select an image in the Describe panel to the left.</span>
-                            </div>
-                        </div>
-                        <p class="text-xs text-zinc-500 max-w-md leading-relaxed mx-auto">
-                            Ideogram 4.0 analyzes the image to extract its high-level prompts and bounding boxes, which you can then load directly back into your canvas.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Global Action Button -->
-                <div class="w-full max-w-2xl pt-4">
-                    <button onclick="triggerGeneration()" id="btn-fire" class="w-full py-4 px-6 rounded-xl font-bold text-white text-base tracking-wide bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-purple-900/30 flex items-center justify-center gap-3">
-                        <svg id="btn-fire-icon" class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        <span id="btn-fire-text">GENERATE IMAGE WITH IDEOGRAM 4.0</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Output Tab View -->
-            <div id="tab-output" class="hidden p-6 space-y-6">
-                <div class="max-w-4xl mx-auto space-y-6">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-bold">Generated Result</h2>
-                        <button onclick="switchCenterTab('tab-editor')" class="text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 transition-all">
-                            Back to Editor
-                        </button>
-                    </div>
-
-                    <!-- Output Preview Panel -->
-                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[450px] relative overflow-hidden shadow-2xl">
-                        <!-- Loading State -->
-                        <div id="output-loader" class="hidden flex flex-col items-center space-y-4">
-                            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-                            <span class="text-xs font-semibold text-zinc-400" id="output-loader-text">Connecting to Ideogram 4.0 API...</span>
-                        </div>
-
-                        <!-- Success State Image -->
-                        <div id="output-media-container" class="hidden w-full flex flex-col items-center space-y-4">
-                            <img id="output-image" src="" alt="Ideogram 4.0 Output" class="max-h-[60vh] max-w-full rounded-xl border border-zinc-700 shadow-xl object-contain">
-                            <div class="flex gap-2">
-                                <a id="output-btn-download" href="" target="_blank" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-lg shadow-lg flex items-center gap-1.5 transition-all">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Download Image
-                                </a>
-                                <!-- Describe backport to drawing -->
-                                <button id="output-btn-loadboxes" onclick="loadDescribedBoxesBackToCanvas()" class="hidden px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-lg shadow-lg flex items-center gap-1.5 transition-all">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> Load Boxes Back to Canvas
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div id="output-empty" class="text-zinc-600 text-center flex flex-col items-center space-y-3 p-6">
-                            <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            <span class="text-sm font-semibold text-zinc-500">No Generated Result Yet</span>
-                            <p class="text-xs text-zinc-600 max-w-xs">Complete the settings in the sidebar and press the Action button to start sketching and generating images!</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- SIDEBAR RIGHT: High-Level / Style details and JSON live compiler preview -->
-        <aside id="sidebar-right" class="w-[340px] bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0 overflow-hidden z-30">
-            <!-- Header -->
-            <div class="p-4 border-b border-zinc-800">
-                <span class="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-                    Global Specifications
-                </span>
-                <p class="text-[10px] text-zinc-500 mt-0.5 leading-tight">These settings control the overall composition for the Ideogram model.</p>
-            </div>
-
-            <!-- Global Settings Input Form -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                
                 <!-- High Level Description -->
                 <div class="space-y-1.5">
-                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Main Description (High Level)</label>
-                    <textarea id="global-high-level" oninput="updateJsonPreview()" placeholder="A hyperrealistic portrait of a scientist..." class="w-full h-16 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-700 resize-none"></textarea>
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">High Level Description</label>
+                    <textarea id="global-high-level" oninput="updateJsonPreview()" placeholder="A hyperrealistic editorial portrait of a scientist..." class="w-full h-20 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-700 resize-none custom-scrollbar"></textarea>
                 </div>
 
                 <!-- Background Description -->
                 <div class="space-y-1.5">
-                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Background Environment (Background)</label>
-                    <textarea id="global-background" oninput="updateJsonPreview()" placeholder="A futuristic laboratory backdrop with blurred server rack lights..." class="w-full h-16 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-700 resize-none"></textarea>
+                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Background Environment</label>
+                    <textarea id="global-background" oninput="updateJsonPreview()" placeholder="A dark futuristic science laboratory backdrop with out-of-focus server lights..." class="w-full h-20 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-700 resize-none custom-scrollbar"></textarea>
                 </div>
 
-                <!-- Global Style Type -->
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Style Type</label>
-                    <select id="style-type" onchange="toggleStyleInput()" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-300">
-                        <option value="photo" selected>Photo (Photography)</option>
-                        <option value="non-photo">Non-photo (Art, Design, Illustration)</option>
-                    </select>
-                </div>
-
-                <!-- Global Style Value -->
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Style Value</label>
-                    <input type="text" id="global-style-val" oninput="updateJsonPreview()" placeholder="Cinematic, editorial portrait" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-700">
-                </div>
-
-                <!-- Styling Parameters (Aesthetics, Lighting, Medium, artStyle/photo) -->
+                <!-- Global Style Configuration -->
                 <div class="space-y-3 pt-2 border-t border-zinc-800">
-                    <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Detailed Style Attributes</span>
-                    
+                    <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Style Deconstruction</span>
+
+                    <!-- Style Type Selector -->
+                    <div class="space-y-1">
+                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Style Type</label>
+                        <select id="style-type" onchange="toggleStyleInput()" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-300">
+                            <option value="photo" selected>Photo (Real Photography)</option>
+                            <option value="non-photo">Non-photo (Art & Illustration)</option>
+                        </select>
+                    </div>
+
+                    <!-- Style Value -->
+                    <div class="space-y-1">
+                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Style Value</label>
+                        <input type="text" id="global-style-val" oninput="updateJsonPreview()" placeholder="Cinematic, detailed character portrait" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-700">
+                    </div>
+
                     <!-- Medium -->
                     <div class="space-y-1">
                         <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Medium</label>
-                        <input type="text" id="global-medium" oninput="updateJsonPreview()" placeholder="Photography, oil painting, 3D render..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                        <input type="text" id="global-medium" oninput="updateJsonPreview()" placeholder="Photography, oil sketch, vector art..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-750">
                     </div>
 
                     <!-- Aesthetics -->
                     <div class="space-y-1">
                         <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Aesthetic</label>
-                        <input type="text" id="global-aesthetics" oninput="updateJsonPreview()" placeholder="Clean design, cinematic composition, hyperdetailed..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                        <input type="text" id="global-aesthetics" oninput="updateJsonPreview()" placeholder="Clean modern design, hyperdetailed texture..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-750">
                     </div>
 
                     <!-- Lighting -->
                     <div class="space-y-1">
                         <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Lighting</label>
-                        <input type="text" id="global-lighting" oninput="updateJsonPreview()" placeholder="Volumetric, soft studio glow, sunset lighting..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                        <input type="text" id="global-lighting" oninput="updateJsonPreview()" placeholder="Warm studio rim lighting, sunset glow..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-750">
                     </div>
 
-                    <!-- Conditional Photo Spec -->
+                    <!-- Conditional Camera Lens parameters (Photo Type Only) -->
                     <div id="photo-field-group" class="space-y-1">
-                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Camera/Lens (Photo parameters)</label>
-                        <input type="text" id="global-photo-spec" oninput="updateJsonPreview()" placeholder="85mm f/1.4 lens, shallow depth of field..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                        <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Camera/Lens (Photo Specs)</label>
+                        <input type="text" id="global-photo-spec" oninput="updateJsonPreview()" placeholder="Shot on 85mm lens at f/1.4, sharp focus..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-750">
                     </div>
 
-                    <!-- Conditional Art Style Spec -->
+                    <!-- Conditional Art Style parameters (Non-photo Type Only) -->
                     <div id="art-field-group" class="space-y-1 hidden">
                         <label class="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Art Style</label>
-                        <input type="text" id="global-art-spec" oninput="updateJsonPreview()" placeholder="Vector art, pop art, watercolor style..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-750">
+                        <input type="text" id="global-art-spec" oninput="updateJsonPreview()" placeholder="Vector graphic design, oil impasto style..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-200 placeholder-zinc-750">
                     </div>
                 </div>
+            </div>
+        </aside>
 
-                <!-- Real-Time Compiled JSON Code Area -->
-                <div class="space-y-2 pt-4 border-t border-zinc-800">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Compiled JSON Prompt</span>
-                        <button onclick="copyCompiledJsonToClipboard()" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">Copy JSON</button>
+        <!-- COLUMN 2: CENTER PANEL (Interactive Drawing Canvas Workspace) -->
+        <main class="flex-1 bg-zinc-950 flex flex-col min-w-0 h-full relative border-r border-zinc-800">
+            <!-- Canvas Header Toolbar -->
+            <div class="bg-zinc-900 border-b border-zinc-800 px-6 py-3 flex items-center shrink-0 gap-2">
+                <span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-200">Interactive Spatial Planner</h2>
+            </div>
+
+            <!-- Workspace Editor View -->
+            <div class="flex-1 p-6 flex flex-col items-center justify-center space-y-4 overflow-y-auto custom-scrollbar">
+                
+                <!-- Bounding Box Planner Area -->
+                <div id="canvas-workspace" class="flex flex-col items-center space-y-4 w-full max-w-[min(70vh,750px)]">
+                    
+                    <!-- Toolbar Controls -->
+                    <div class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 flex items-center justify-between shadow-lg">
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="setSelectedDrawingTool('obj')" id="tool-btn-obj" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/40 transition-all shadow-sm">
+                                <span class="h-2 w-2 rounded-full bg-teal-400"></span> Object Box (obj)
+                            </button>
+                            <button onclick="setSelectedDrawingTool('text')" id="tool-btn-text" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">
+                                <span class="h-2 w-2 rounded-full bg-orange-500"></span> Text Box (text)
+                            </button>
+                        </div>
+                        <button onclick="clearAllBoxes()" class="text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2.5 py-1.5 rounded-lg border border-transparent hover:border-red-500/20 transition-all flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Reset Workspace
+                        </button>
                     </div>
-                    <pre class="bg-zinc-950 border border-zinc-850 rounded-lg p-2.5 text-[10px] text-zinc-400 font-mono overflow-x-auto max-h-56 no-scrollbar" id="json-preview"></pre>
+
+                    <!-- Main Interactive Drawing Canvas -->
+                    <div class="relative w-full aspect-square bg-zinc-950 border-2 border-zinc-800 rounded-xl overflow-hidden shadow-2xl select-none grid-bg group" id="drawing-canvas" onmousedown="onCanvasMouseDown(event)">
+                        
+                        <!-- Empty Layout Instruction Hint -->
+                        <div id="canvas-empty-hint" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-6 text-center space-y-2 z-0">
+                            <svg class="w-12 h-12 text-zinc-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            <span class="text-sm font-semibold text-zinc-400">Layout Canvas Empty</span>
+                            <span class="text-xs text-zinc-600 max-w-xs">Click & drag your cursor here to define bounding boxes! You can edit, resize, and move them dynamically.</span>
+                        </div>
+
+                        <!-- Render Layer for Interactive Boxes -->
+                        <div id="boxes-layer" class="absolute inset-0 z-10 pointer-events-none"></div>
+
+                        <!-- Drag Placement Preview Guide -->
+                        <div id="drag-preview" class="absolute border border-dashed border-white/60 bg-white/5 hidden pointer-events-none z-20"></div>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="text-[10px] text-zinc-500 font-mono tracking-tight uppercase leading-none">Normalized Grid: 0 to 1000 Coordinate System (y-min, x-min, y-max, x-max)</p>
+                    </div>
                 </div>
+            </div>
+        </main>
+
+        <!-- COLUMN 3: RIGHT PANEL (Full-Height Compiled JSON Code Output) -->
+        <aside class="w-[420px] bg-zinc-900 flex flex-col shrink-0 overflow-hidden z-30">
+            <!-- Header with Large Action Button -->
+            <div class="p-4 border-b border-zinc-800 flex flex-col gap-3 shrink-0">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    <span class="text-xs font-bold uppercase tracking-wider text-zinc-300">Live Structured Output</span>
+                </div>
+                <!-- Large, glow-styled copy action button -->
+                <button onclick="copyCompiledJsonToClipboard()" class="w-full py-3 px-4 rounded-xl font-bold text-white text-xs tracking-wider uppercase bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-emerald-950/20 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                    Copy Compiled JSON Prompt
+                </button>
+            </div>
+
+            <!-- Scrollable Syntax-Highlighted JSON Viewer Block -->
+            <div class="flex-1 overflow-auto p-4 bg-zinc-950/80 custom-scrollbar font-mono text-[11px] leading-relaxed select-text" id="json-viewer-container">
+                <pre class="whitespace-pre overflow-x-auto" id="json-highlighted-view"></pre>
             </div>
         </aside>
     </div>
 
-    <!-- OVERLAY: Prompt Specifiers Creator for drawn Box -->
-    <div id="modal-box-detail" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 hidden">
+    <!-- MODAL POPUP: Specify Bounding Box Metadata on completion -->
+    <div id="modal-box-detail" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative">
-            <h3 class="font-bold text-base text-zinc-100">Specify Bounding Box</h3>
+            <h3 class="font-extrabold text-base text-zinc-100 tracking-wide">Configure Bounding Box</h3>
             
-            <!-- Box Type -->
+            <!-- Type Selector Toggle -->
             <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Bounding Box Type</label>
                 <div class="grid grid-cols-2 gap-2">
@@ -509,224 +241,64 @@
                 </div>
             </div>
 
-            <!-- Optional Text String Input (Only for text type) -->
+            <!-- Text Content Input (Only reveals for Text Box type) -->
             <div id="modal-text-group" class="space-y-1.5 hidden">
-                <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Text String to Render</label>
-                <input type="text" id="modal-text-value" placeholder="Type exact characters, e.g., 'CREATE'" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-100 placeholder-zinc-600">
+                <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider font-mono">TEXT:</label>
+                <input type="text" id="modal-text-value" placeholder="Exact characters to render, e.g., 'IDEOGRAM v4'" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-100 placeholder-zinc-700">
             </div>
 
-            <!-- Box Description -->
+            <!-- Description Details -->
             <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Description of Contents</label>
-                <textarea id="modal-desc" placeholder="E.g., A vintage neon sign mounted on the wall..." class="w-full h-24 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-100 placeholder-zinc-600 resize-none"></textarea>
-            </div>
-
-            <!-- Coordinate read-only -->
-            <div class="flex justify-between items-center text-[10px] text-zinc-500 font-mono bg-zinc-950 p-2 rounded-lg border border-zinc-850">
-                <span>Norm-coordinates:</span>
-                <span id="modal-coord-text">[0, 0, 0, 0]</span>
+                <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider font-mono">DESCRIPTION:</label>
+                <textarea id="modal-desc" placeholder="What should occupy this space? E.g., 'A vintage neon sign glowing in amber and teal...'" class="w-full h-24 bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-100 placeholder-zinc-700 resize-none custom-scrollbar"></textarea>
             </div>
 
             <!-- Modal Action Buttons -->
             <div class="flex gap-2.5 pt-2">
-                <button onclick="cancelBoxModal()" class="flex-1 py-2.5 rounded-lg text-xs font-bold bg-zinc-950 hover:bg-zinc-800 border border-zinc-850 text-zinc-400 transition-all">Cancel</button>
-                <button onclick="saveBoxModal()" class="flex-1 py-2.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg transition-all">Save Bounding Box</button>
+                <button onclick="cancelBoxModal()" class="flex-1 py-2.5 rounded-lg text-xs font-bold bg-zinc-950 hover:bg-zinc-850 border border-zinc-800 text-zinc-400 transition-all">Cancel</button>
+                <button onclick="saveBoxModal()" class="flex-1 py-2.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg transition-all">Save Box Node</button>
             </div>
         </div>
     </div>
 
-    <!-- TOAST MESSAGES LAYER -->
+    <!-- Toast Layer for Non-intrusive UI Alerts -->
     <div id="toast-layer" class="fixed bottom-6 right-6 flex flex-col gap-2 z-50 pointer-events-none"></div>
 
-    <!-- CORE SCRIPT ENGINE -->
+    <!-- CORE SYSTEM ENGINE -->
     <script>
-        // Global Sandbox state
-        let sandboxMode = true;
-
-        // Bounding boxes coordinates storage
-        // Coordinates normalized to 0-1000 scale in order of [ymin, xmin, ymax, xmax]
+        // Global variables for managing the workspace state
         let boxes = [];
-        let selectedBoxId = null; 
+        let selectedBoxId = null;
 
-        // Drawing state
+        // Interactive states
         let isDrawing = false;
         let isMoving = false;
         let isResizing = false;
         let resizeCorner = null; // 'tl', 'tr', 'bl', 'br'
         let dragStartX = 0, dragStartY = 0;
-        let boxStartCoords = {}; // copy of active box coords before move/resize
-        let activeSection = 'generate'; // 'generate', 'remix', 'describe'
-
-        // Drawing helpers
-        let selectedDrawingTool = 'obj'; // 'obj' or 'text'
+        let boxStartCoords = {}; // Pre-state save before move/resize modifiers
+        let selectedDrawingTool = 'obj'; // Active tool: 'obj' or 'text'
         let drawStartX = 0;
         let drawStartY = 0;
-        let tempCoords = null;
-        let generateMode = 'drawing'; // 'prompt' or 'drawing'
+        let tempCoords = null; // Stash array for active drawing coordinate frame
 
-        // File management variables
-        let uploadedRemixFile = null;
-        let uploadedDescribeFile = null;
-        let lastDescribedResponse = null; // for backporting boxes back into canvas
-
-        // Modal Specific Box states
+        // Modal Specific Box configs
         let modalBoxType = 'obj';
-        let modalBoxCoords = null; // [ymin, xmin, ymax, xmax]
+        let modalBoxCoords = null; // Coordinates normalized: [ymin, xmin, ymax, xmax]
 
-        // Main execution block starts on window load
+        // Initialize Workspace state and setup UI listeners
         window.onload = function() {
-            // Apply localStorage credentials if they exist
-            if (localStorage.getItem('ideogram_api_key')) {
-                document.getElementById('api-key').value = localStorage.getItem('ideogram_api_key');
-                sandboxMode = false;
-                updateSandboxBadge();
-            }
-            if (localStorage.getItem('ideogram_api_proxy')) {
-                document.getElementById('api-proxy').value = localStorage.getItem('ideogram_api_proxy');
-            }
-
-            // Real-time compilation of JSON preview
-            setInterval(updateJsonPreview, 500);
+            // Real-time automatic updates
+            setInterval(updateJsonPreview, 350);
             
-            // Touch handlers
+            // Touch gestures mappings
             setupTouchSupport();
 
-            // Initialize the default center view layout
-            updateCenterView();
-        }
-
-        // Accordion Toggle handler with explicit style and height cleanup
-        function toggleAccordion(sectionId) {
-            const sections = ['acc-generate', 'acc-remix', 'acc-describe'];
-            const target = document.getElementById(sectionId);
-            const isCollapsed = target.classList.contains('max-h-0');
-
-            sections.forEach(sec => {
-                const el = document.getElementById(sec);
-                const arrow = document.getElementById('arrow-' + sec);
-                
-                // Fully collapse everything to zero size, zero margins/paddings, and no border lines
-                el.classList.add('max-h-0', 'opacity-0');
-                el.classList.remove('max-h-[1000px]', 'p-4', 'opacity-100', 'border-t', 'border-zinc-950');
-                arrow.classList.remove('rotate-180');
-            });
-
-            // Expand target if it was previously collapsed
-            if (isCollapsed) {
-                target.classList.remove('max-h-0', 'opacity-0');
-                target.classList.add('max-h-[1000px]', 'p-4', 'opacity-100', 'border-t', 'border-zinc-950');
-                document.getElementById('arrow-' + sectionId).classList.add('rotate-180');
-                
-                // Update active general category based on expanded accordion
-                if (sectionId === 'acc-generate') {
-                    activeSection = 'generate';
-                    switchCenterTab('tab-editor');
-                } else if (sectionId === 'acc-remix') {
-                    activeSection = 'remix';
-                    switchCenterTab('tab-editor');
-                } else if (sectionId === 'acc-describe') {
-                    activeSection = 'describe';
-                    switchCenterTab('tab-editor'); // Staying in Editor View to let users click ANALYZE first
-                }
-                updateCenterView();
-            }
-        }
-
-        // Manage UI views based on prompt vs drawing
-        function setGenerateMode(mode) {
-            generateMode = mode;
-            const btnPrompt = document.getElementById('btn-mode-prompt');
-            const btnDrawing = document.getElementById('btn-mode-drawing');
-            const promptInputGroup = document.getElementById('input-prompt-group');
-
-            if (mode === 'prompt') {
-                btnPrompt.className = "py-1.5 px-3 rounded-md text-xs font-semibold transition-all bg-purple-600 text-white shadow-sm";
-                btnDrawing.className = "py-1.5 px-3 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200";
-                promptInputGroup.classList.remove('hidden');
-            } else {
-                btnPrompt.className = "py-1.5 px-3 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200";
-                btnDrawing.className = "py-1.5 px-3 rounded-md text-xs font-semibold transition-all bg-purple-600 text-white shadow-sm";
-                promptInputGroup.classList.add('hidden');
-            }
-            updateCenterView();
-        }
-
-        // Central Adapter Engine for dynamically re-arranging the workspace elements
-        function updateCenterView() {
-            const viewGenerate = document.getElementById('center-generate-view');
-            const viewRemix = document.getElementById('center-remix-view');
-            const viewDescribe = document.getElementById('center-describe-view');
-            
-            const btnFire = document.getElementById('btn-fire');
-            const btnFireText = document.getElementById('btn-fire-text');
-            const btnFireIcon = document.getElementById('btn-fire-icon');
-
-            // Hide all container blocks
-            viewGenerate.classList.add('hidden');
-            viewRemix.classList.add('hidden');
-            viewDescribe.classList.add('hidden');
-
-            // Clear all tailwind color styles on the Fire button first
-            btnFire.className = "w-full py-4 px-6 rounded-xl font-bold text-white text-base tracking-wide transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg flex items-center justify-center gap-3";
-
-            if (activeSection === 'generate') {
-                viewGenerate.classList.remove('hidden');
-                btnFireText.innerText = "GENERATE IMAGE WITH IDEOGRAM 4.0";
-                btnFire.classList.add("bg-gradient-to-r", "from-purple-600", "to-indigo-600", "hover:from-purple-500", "hover:to-indigo-500", "shadow-purple-900/30");
-                btnFireIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>`;
-
-                const workspace = document.getElementById('canvas-workspace');
-                const banner = document.getElementById('prompt-mode-canvas-banner');
-                if (generateMode === 'prompt') {
-                    banner.classList.remove('hidden');
-                    workspace.classList.add('hidden');
-                } else {
-                    banner.classList.add('hidden');
-                    workspace.classList.remove('hidden');
-                }
-            } else if (activeSection === 'remix') {
-                viewRemix.classList.remove('hidden');
-                btnFireText.innerText = "REMIX IMAGE WITH IDEOGRAM 4.0";
-                btnFire.classList.add("bg-gradient-to-r", "from-emerald-600", "to-teal-600", "hover:from-emerald-500", "hover:to-teal-500", "shadow-emerald-900/30");
-                btnFireIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.228 10H16M12 12V4h8"/>`;
-
-                // Live populate current prompt instructions to center studio
-                const promptVal = document.getElementById('remix-prompt').value.trim();
-                document.getElementById('center-remix-prompt-text').innerText = promptVal ? `"${promptVal}"` : "No remix prompt provided...";
-            } else if (activeSection === 'describe') {
-                viewDescribe.classList.remove('hidden');
-                btnFireText.innerText = "ANALYZE IMAGE WITH IDEOGRAM 4.0";
-                btnFire.classList.add("bg-gradient-to-r", "from-cyan-600", "to-sky-600", "hover:from-cyan-500", "hover:to-sky-500", "shadow-cyan-900/30");
-                btnFireIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.663 17h4.673M12 3v1m6.364 .364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>`;
-            }
-
+            // Default compilation
             updateJsonPreview();
         }
 
-        // Center Area Tabs
-        function switchCenterTab(tabId) {
-            const tabEditor = document.getElementById('tab-editor');
-            const tabOutput = document.getElementById('tab-output');
-            
-            const btnEditor = document.getElementById('tab-btn-editor');
-            const btnOutput = document.getElementById('tab-btn-output');
-
-            if (tabId === 'tab-editor') {
-                tabEditor.classList.remove('hidden');
-                tabOutput.classList.add('hidden');
-                
-                btnEditor.className = "text-xs font-bold px-3 py-1.5 rounded-lg transition-all bg-zinc-800 text-white";
-                btnOutput.className = "text-xs font-semibold px-3 py-1.5 rounded-lg transition-all text-zinc-400 hover:text-zinc-200";
-            } else {
-                tabEditor.classList.add('hidden');
-                tabOutput.classList.remove('hidden');
-                
-                btnEditor.className = "text-xs font-semibold px-3 py-1.5 rounded-lg transition-all text-zinc-400 hover:text-zinc-200";
-                btnOutput.className = "text-xs font-bold px-3 py-1.5 rounded-lg transition-all bg-zinc-800 text-white";
-            }
-        }
-
-        // Set style parameters Photo vs Non-photo
+        // Adjust visibility depending on Style selection (photo vs non-photo)
         function toggleStyleInput() {
             const style = document.getElementById('style-type').value;
             const photoGroup = document.getElementById('photo-field-group');
@@ -742,7 +314,7 @@
             updateJsonPreview();
         }
 
-        // Selected canvas drawing tool (obj / text)
+        // Active drawing tool state changes
         function setSelectedDrawingTool(tool) {
             selectedDrawingTool = tool;
             const btnObj = document.getElementById('tool-btn-obj');
@@ -750,101 +322,62 @@
             const badge = document.getElementById('active-tool-badge');
 
             if (tool === 'obj') {
-                btnObj.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/40 transition-all";
+                btnObj.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/40 transition-all shadow-sm";
                 btnText.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all";
-                badge.innerText = "Active Mode: Drawing Object";
-                badge.classList.remove('bg-orange-500/10', 'text-orange-400', 'border-orange-500/20');
-                badge.classList.add('bg-teal-500/10', 'text-teal-400', 'border-teal-500/20');
+                if (badge) {
+                    badge.innerText = "Drawing Mode: Physical Object";
+                    badge.className = "text-[10px] bg-teal-500/10 text-teal-400 border border-teal-500/20 px-2.5 py-1 rounded-md font-semibold font-mono uppercase";
+                }
             } else {
                 btnObj.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all";
-                btnText.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-500/20 text-orange-300 border border-orange-500/40 transition-all";
-                badge.innerText = "Active Mode: Drawing Text";
-                badge.classList.remove('bg-teal-500/10', 'text-teal-400', 'border-teal-500/20');
-                badge.classList.add('bg-orange-500/10', 'text-orange-400', 'border-orange-500/20');
+                btnText.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-500/20 text-orange-300 border border-orange-500/40 transition-all shadow-sm";
+                if (badge) {
+                    badge.innerText = "Drawing Mode: Rendered Text";
+                    badge.className = "text-[10px] bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2.5 py-1 rounded-md font-semibold font-mono uppercase";
+                }
             }
         }
 
-        // Credentials security storage
-        function saveCredentials() {
-            const key = document.getElementById('api-key').value.trim();
-            const proxy = document.getElementById('api-proxy').value.trim();
-
-            if (key) {
-                localStorage.setItem('ideogram_api_key', key);
-                sandboxMode = false;
-            } else {
-                localStorage.removeItem('ideogram_api_key');
-                sandboxMode = true;
-            }
-
-            if (proxy) {
-                localStorage.setItem('ideogram_api_proxy', proxy);
-            } else {
-                localStorage.removeItem('ideogram_api_proxy');
-            }
-            updateSandboxBadge();
-        }
-
-        function toggleSandboxMode() {
-            sandboxMode = !sandboxMode;
-            updateSandboxBadge();
-            showToast(sandboxMode ? "Demo Mode Activated" : "API Mode Activated", 
-                      sandboxMode ? "Images will be simulated instead of consuming your API account credits." : "Requests will be sent directly using your API key.", 
-                      sandboxMode ? "amber" : "indigo");
-        }
-
-        function updateSandboxBadge() {
-            const badge = document.getElementById('sandbox-badge');
-            if (sandboxMode) {
-                badge.innerText = "DEMO ACTIVE";
-                badge.className = "text-[9px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold px-2 py-0.5 rounded-md hover:bg-emerald-500/20 transition-all";
-            } else {
-                badge.innerText = "LIVE API";
-                badge.className = "text-[9px] bg-purple-500/15 border border-purple-500/30 text-purple-400 font-bold px-2 py-0.5 rounded-md hover:bg-purple-500/20 transition-all";
-            }
-        }
-
-        // Coordinate converter from pixel/client to 0-1000 normalized grid
+        // Normalizes absolute clientspace values back into Ideogram's 0-1000 coordinate range
         function clientToNormalized(clientX, clientY) {
             const canvas = document.getElementById('drawing-canvas');
             const rect = canvas.getBoundingClientRect();
             
-            // Calculate proportional position 0 to 1000
             const x = ((clientX - rect.left) / rect.width) * 1000;
             const y = ((clientY - rect.top) / rect.height) * 1000;
 
-            // clamp values between 0 and 1000
+            // Constrain precisely to boundaries
             return {
                 x: Math.max(0, Math.min(1000, Math.round(x))),
                 y: Math.max(0, Math.min(1000, Math.round(y)))
             };
         }
 
-        // Core Canvas Mouse Events
+        // Core Mouse click actions inside Drawing Canvas Workspace
         function onCanvasMouseDown(e) {
-            // Check if user clicked a resize handle
+            // Check if pointer hit a corner resize handle node
             if (e.target.classList.contains('resize-handle')) {
                 const corner = e.target.dataset.corner;
                 initiateResize(corner, e);
                 return;
             }
 
-            // Check if user clicked an existing box body
+            // Check if pointer hit an existing bounding box
             const boxElement = e.target.closest('.canvas-box');
             if (boxElement) {
                 const boxId = parseInt(boxElement.dataset.id);
                 
-                // If it's already selected, initiate moving
+                // If clicked box is already highlighted, start moving immediately
                 if (selectedBoxId === boxId) {
                     initiateMove(e);
                 } else {
-                    // Just select it first
+                    // Otherwise select it
                     selectBox(boxId);
                 }
                 return;
             }
 
-            // Clicking empty area deselects and starts drawing
+            // Clicked on raw background workspace canvas: deselect active box and draft a new one
             deselectAllBoxes();
             
             isDrawing = true;
@@ -859,7 +392,7 @@
             preview.style.height = '0%';
             preview.classList.remove('hidden');
 
-            // Attach listeners to document to handle out-of-canvas dragging smoothly
+            // Attach workspace dragging globally
             document.addEventListener('mousemove', onDocumentMouseMove);
             document.addEventListener('mouseup', onDocumentMouseUp);
         }
@@ -922,7 +455,7 @@
                 let newYmax = boxStartCoords.ymax + dy;
                 let newXmax = boxStartCoords.xmax + dx;
 
-                // Collision guard rails (0 - 1000 grid limits)
+                // Collision guard check against 0-1000 coordinate borders
                 const height = boxStartCoords.ymax - boxStartCoords.ymin;
                 const width = boxStartCoords.xmax - boxStartCoords.xmin;
 
@@ -948,7 +481,7 @@
                 let ymax = boxStartCoords.ymax;
                 let xmax = boxStartCoords.xmax;
 
-                const minSize = 20; // prevent flipping/inverting
+                const minSize = 20; // Clamp min dimensional box limit to avoid inversion anomalies
 
                 if (resizeCorner === 'tl') {
                     ymin = Math.min(boxStartCoords.ymax - minSize, Math.max(0, ymin + dy));
@@ -986,7 +519,7 @@
                     const width = tempCoords[3] - tempCoords[1];
                     const height = tempCoords[2] - tempCoords[0];
                     
-                    // Filter accidental clicks or extremely small selections
+                    // Discard tiny click jitters/accidental selections
                     if (width > 15 && height > 15) {
                         openBoxModal(tempCoords);
                     }
@@ -1003,33 +536,29 @@
             }
         }
 
-        // Select specific Box
         function selectBox(id) {
             selectedBoxId = id;
             renderBoxesOnCanvas();
         }
 
-        // Deselect Box
         function deselectAllBoxes() {
             selectedBoxId = null;
             renderBoxesOnCanvas();
         }
 
-        // Touch Support implementation for portable tablets & screens
+        // Portability optimization for touchscreen interfaces (e.g., Tablets, iPads)
         function setupTouchSupport() {
             const canvas = document.getElementById('drawing-canvas');
             
             canvas.addEventListener('touchstart', function(e) {
                 if (e.touches.length === 1) {
                     const touch = e.touches[0];
-                    // Map simulated mouse event
                     const simulatedEvent = new MouseEvent('mousedown', {
                         clientX: touch.clientX,
                         clientY: touch.clientY,
                         bubbles: true,
                         cancelable: true
                     });
-                    // Fire target
                     e.target.dispatchEvent(simulatedEvent);
                 }
             }, { passive: false });
@@ -1044,7 +573,7 @@
                         cancelable: true
                     });
                     document.dispatchEvent(simulatedEvent);
-                    e.preventDefault(); // prevent scrolling while editing
+                    e.preventDefault();
                 }
             }, { passive: false });
 
@@ -1057,12 +586,11 @@
             }, { passive: true });
         }
 
-        // Render visual divs for bounding boxes
+        // Redraws the spatial representation elements directly onto grid-bg canvas layer
         function renderBoxesOnCanvas() {
             const layer = document.getElementById('boxes-layer');
             const hint = document.getElementById('canvas-empty-hint');
             
-            // Empty the active renderer
             layer.innerHTML = "";
 
             if (boxes.length === 0) {
@@ -1076,10 +604,10 @@
                 const isSelected = box.id === selectedBoxId;
                 const isText = box.type === 'text';
 
-                // Setup container div
+                // Construct Element container
                 const el = document.createElement('div');
                 el.dataset.id = box.id;
-                el.className = `absolute border-2 pointer-events-auto cursor-pointer canvas-box transition-shadow duration-150 ${
+                el.className = `absolute border-2 pointer-events-auto cursor-pointer canvas-box transition-all duration-100 ${
                     isSelected ? 'z-30' : 'z-20'
                 } ${
                     isText 
@@ -1087,35 +615,34 @@
                         : 'border-teal-500 bg-teal-500/10 hover:bg-teal-500/20'
                 }`;
 
-                // Position box as percentages based on grid coordinates
+                // Absolute percentage scaling inside aspect-square layer
                 el.style.top = `${box.ymin / 10}%`;
                 el.style.left = `${box.xmin / 10}%`;
                 el.style.width = `${(box.xmax - box.xmin) / 10}%`;
                 el.style.height = `${(box.ymax - box.ymin) / 10}%`;
 
-                // Set selection glow and handle cursors
                 if (isSelected) {
-                    el.classList.add('ring-2', 'ring-white', 'shadow-2xl', 'cursor-move');
+                    el.classList.add('ring-2', 'ring-white/50', 'shadow-2xl', 'cursor-move');
                 }
 
-                // Inner content layout (Title badge, desc prompt text)
+                // Internal tag labelling and description metadata layout
                 const content = document.createElement('div');
-                content.className = 'w-full h-full p-1.5 flex flex-col justify-between overflow-hidden relative select-none';
+                content.className = 'w-full h-full p-2 flex flex-col justify-between overflow-hidden relative select-none';
                 
-                // Top row with Category Badge and Delete Action
                 const header = document.createElement('div');
                 header.className = 'flex items-center justify-between pointer-events-none';
                 
                 const badge = document.createElement('span');
-                badge.className = `text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
-                    isText ? 'bg-orange-600 text-white' : 'bg-teal-600 text-white'
+                badge.className = `text-[8px] font-extrabold font-mono uppercase px-1.5 py-0.5 rounded shadow ${
+                    isText ? 'bg-orange-600 text-white border border-orange-400/20' : 'bg-teal-600 text-white border border-teal-400/20'
                 }`;
                 badge.innerText = isText ? `text: "${box.text || ''}"` : 'obj';
                 header.appendChild(badge);
 
                 if (isSelected) {
+                    // Inject explicit quick-delete element button
                     const delBtn = document.createElement('button');
-                    delBtn.className = 'p-0.5 bg-red-600 hover:bg-red-500 text-white rounded pointer-events-auto transition-colors shadow';
+                    delBtn.className = 'p-0.5 bg-red-600 hover:bg-red-500 text-white rounded pointer-events-auto transition-colors shadow z-50';
                     delBtn.innerHTML = `<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`;
                     delBtn.onclick = function(e) {
                         e.stopPropagation();
@@ -1125,25 +652,24 @@
                 }
                 content.appendChild(header);
 
-                // Box description text at bottom of box
+                // Lower text preview inside layout boxes
                 const desc = document.createElement('p');
-                desc.className = 'text-[9px] text-zinc-200 font-medium leading-snug tracking-normal truncate drop-shadow';
-                desc.innerText = box.desc || (isText ? 'No style...' : 'No description...');
+                desc.className = 'text-[9px] text-zinc-200 font-semibold leading-tight truncate drop-shadow';
+                desc.innerText = box.desc || (isText ? 'Render style details...' : 'Object representation prompt...');
                 content.appendChild(desc);
 
                 el.appendChild(content);
 
-                // If selected, inject the 4 corner resize handles
+                // Inject draggable resize handles if this element is currently selected
                 if (isSelected) {
                     const corners = ['tl', 'tr', 'bl', 'br'];
                     corners.forEach(cor => {
                         const handle = document.createElement('div');
-                        handle.className = `resize-handle absolute w-3 h-3 rounded-full border-2 border-white z-40 transition-transform hover:scale-125 ${
+                        handle.className = `resize-handle absolute w-3 h-3 rounded-full border-2 border-white z-40 transition-transform hover:scale-125 shadow-md ${
                             isText ? 'bg-orange-500' : 'bg-teal-500'
                         }`;
                         handle.dataset.corner = cor;
 
-                        // Position corner nodes
                         if (cor === 'tl') { handle.style.top = '-6px'; handle.style.left = '-6px'; handle.style.cursor = 'nwse-resize'; }
                         else if (cor === 'tr') { handle.style.top = '-6px'; handle.style.right = '-6px'; handle.style.cursor = 'nesw-resize'; }
                         else if (cor === 'bl') { handle.style.bottom = '-6px'; handle.style.left = '-6px'; handle.style.cursor = 'nesw-resize'; }
@@ -1157,13 +683,12 @@
             });
         }
 
-        // Delete Box
         function deleteBox(id) {
             boxes = boxes.filter(b => b.id !== id);
             if (selectedBoxId === id) selectedBoxId = null;
             renderBoxesOnCanvas();
             updateJsonPreview();
-            showToast("Box deleted", "The bounding box has been removed from the composition.", "amber");
+            showToast("Box Removed", "Target layout element has been deleted from context.", "amber");
         }
 
         function clearAllBoxes() {
@@ -1172,17 +697,16 @@
             selectedBoxId = null;
             renderBoxesOnCanvas();
             updateJsonPreview();
-            showToast("Canvas cleared", "All bounding boxes on the canvas have been deleted.", "amber");
+            showToast("Workspace Reset", "All active elements have been wiped from drawing board.", "amber");
         }
 
-        // Modal Box Specifier controller
+        // Bounding Box Metadata configuration dialog routines
         function openBoxModal(coords) {
             modalBoxCoords = coords;
             modalBoxType = selectedDrawingTool;
 
             document.getElementById('modal-desc').value = "";
             document.getElementById('modal-text-value').value = "";
-            document.getElementById('modal-coord-text').innerText = `[${coords.join(', ')}]`;
 
             setModalBoxType(modalBoxType);
             document.getElementById('modal-box-detail').classList.remove('hidden');
@@ -1210,12 +734,13 @@
             modalBoxCoords = null;
         }
 
+        // Save element configuration back to main state pool
         function saveBoxModal() {
             const desc = document.getElementById('modal-desc').value.trim();
             const textVal = document.getElementById('modal-text-value').value.trim();
 
             if (modalBoxType === 'text' && !textVal) {
-                showToast("Text missing", "You must specify a text string for rendered text boxes.", "red");
+                showToast("Text Missing", "Text-elements must carry some characters to render.", "red");
                 return;
             }
 
@@ -1231,27 +756,20 @@
             };
 
             boxes.push(newBox);
-            selectedBoxId = newBox.id; // automatically highlight new box
+            selectedBoxId = newBox.id; // Auto focus the newly created element
             
             document.getElementById('modal-box-detail').classList.add('hidden');
             renderBoxesOnCanvas();
             updateJsonPreview();
             
-            showToast("Box created", `Added a new ${modalBoxType} box to the drawing canvas.`, "emerald");
+            showToast("Box Saved", `Added a new '${modalBoxType}' element node to context layout.`, "emerald");
         }
 
-        // Serialization: Save active workspace state to a local file
+        // Exports complete session workspace (Global Specifications + Layout coordinates) to Disk
         function saveProjectToDisk() {
             const projectState = {
-                appVersion: "Ideogram-V4-Studio-Pro-1.0",
+                appVersion: "Intuition-R1-Companion-1.0",
                 timestamp: new Date().toISOString(),
-                activeSection: activeSection,
-                generateMode: generateMode,
-                resolution: document.getElementById('gen-resolution').value,
-                speed: document.getElementById('gen-speed').value,
-                remixResolution: document.getElementById('remix-resolution').value,
-                remixWeight: document.getElementById('remix-weight').value,
-                describeBbox: document.getElementById('describe-bbox').checked,
                 global: {
                     highLevelDesc: document.getElementById('global-high-level').value,
                     backgroundDesc: document.getElementById('global-background').value,
@@ -1269,15 +787,15 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectState, null, 4));
             const dlAnchor = document.createElement('a');
             dlAnchor.setAttribute("href",     dataStr);
-            dlAnchor.setAttribute("download", `ideogram_v4_proj_${Math.floor(Date.now() / 1000)}.json`);
+            dlAnchor.setAttribute("download", `intuition_r1_layout_${Math.floor(Date.now() / 1000)}.json`);
             document.body.appendChild(dlAnchor);
             dlAnchor.click();
             dlAnchor.remove();
 
-            showToast("Project Saved", "All canvases and specifications were successfully exported.", "emerald");
+            showToast("Session Exported", "Workspace parameters saved to disk successfully.", "emerald");
         }
 
-        // Deserialization: Load project state from local disk back into memory
+        // Restores complete session workspace from a serialized json file
         function loadProjectFromDisk(input) {
             const file = input.files[0];
             if (!file) return;
@@ -1287,16 +805,6 @@
                 try {
                     const parsed = JSON.parse(e.target.result);
                     
-                    // Restore global parameters
-                    if (parsed.resolution) document.getElementById('gen-resolution').value = parsed.resolution;
-                    if (parsed.speed) document.getElementById('gen-speed').value = parsed.speed;
-                    if (parsed.remixResolution) document.getElementById('remix-resolution').value = parsed.remixResolution;
-                    if (parsed.remixWeight) {
-                        document.getElementById('remix-weight').value = parsed.remixWeight;
-                        document.getElementById('weight-val').innerText = parsed.remixWeight + "%";
-                    }
-                    if (parsed.describeBbox !== undefined) document.getElementById('describe-bbox').checked = parsed.describeBbox;
-
                     const s = parsed.global;
                     if (s) {
                         document.getElementById('global-high-level').value = s.highLevelDesc || "";
@@ -1311,99 +819,23 @@
                         toggleStyleInput();
                     }
 
-                    // Restore boxes array & redraw visual canvas layers
                     boxes = parsed.boxes || [];
                     deselectAllBoxes();
-                    setGenerateMode(parsed.generateMode || 'drawing');
                     renderBoxesOnCanvas();
-                    updateCenterView();
+                    updateJsonPreview();
 
-                    showToast("Project Loaded!", "Ideogram 4.0 Studio was successfully restored.", "emerald");
+                    showToast("Session Restored", "Workspace settings populated from project file.", "emerald");
 
                 } catch (err) {
-                    showToast("Import Failed", err.message, "red");
+                    showToast("Import Refused", "Unable to parse this project file as valid schema JSON.", "red");
                 }
             };
             reader.readAsText(file);
             input.value = ""; // Clear file selector target
         }
 
-        // Handle uploaded image files
-        function handleFileSelect(input, prefix) {
-            const file = input.files[0];
-            if (file) {
-                processImageFile(file, prefix);
-            }
-        }
-
-        function handleFileDrop(e, prefix) {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                processImageFile(file, prefix);
-            }
-        }
-
-        function processImageFile(file, prefix) {
-            if (!file.type.match('image.*')) {
-                showToast("Invalid Format", "Please upload a PNG, JPG, or WebP image.", "red");
-                return;
-            }
-
-            if (prefix === 'remix') {
-                uploadedRemixFile = file;
-            } else {
-                uploadedDescribeFile = file;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById(`${prefix}-preview`).src = e.target.result;
-                document.getElementById(`${prefix}-preview-container`).classList.remove('hidden');
-                
-                // Mirror the file preview inside our center adaptive studio panel
-                if (prefix === 'remix') {
-                    const centerImg = document.getElementById('center-remix-preview');
-                    const centerPlaceholder = document.getElementById('center-remix-placeholder');
-                    centerImg.src = e.target.result;
-                    centerImg.classList.remove('hidden');
-                    centerPlaceholder.classList.add('hidden');
-                } else if (prefix === 'describe') {
-                    const centerImg = document.getElementById('center-describe-preview');
-                    const centerPlaceholder = document.getElementById('center-describe-placeholder');
-                    centerImg.src = e.target.result;
-                    centerImg.classList.remove('hidden');
-                    centerPlaceholder.classList.add('hidden');
-                }
-
-                showToast("Image Loaded", "The image file has been saved locally in the web app.", "emerald");
-                updateCenterView();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function clearFile(prefix) {
-            if (prefix === 'remix') {
-                uploadedRemixFile = null;
-                document.getElementById('remix-file').value = "";
-                document.getElementById('center-remix-preview').src = "";
-                document.getElementById('center-remix-preview').classList.add('hidden');
-                document.getElementById('center-remix-placeholder').classList.remove('hidden');
-            } else {
-                uploadedDescribeFile = null;
-                document.getElementById('describe-file').value = "";
-                document.getElementById('center-describe-preview').src = "";
-                document.getElementById('center-describe-preview').classList.add('hidden');
-                document.getElementById('center-describe-placeholder').classList.remove('hidden');
-            }
-            document.getElementById(`${prefix}-preview-container`).classList.add('hidden');
-            document.getElementById(`${prefix}-preview`).src = "";
-            updateCenterView();
-        }
-
-        // JSON prompt builder aligned to Ideogram 4.0 structured prompt payload contract
+        // Compiles current workspace parameters directly into exact Ideogram v4 structured API payload
         function compileJsonPrompt() {
-            // Build elements structure
             const elements = boxes.map(b => {
                 const item = {
                     type: b.type,
@@ -1424,12 +856,12 @@
             const promptObj = {
                 compositional_deconstruction: {
                     background: {
-                        desc: document.getElementById('global-background').value.trim() || "A solid studio background"
+                        desc: document.getElementById('global-background').value.trim() || "A beautiful background composition"
                     },
                     elements: elements
                 },
                 global: {
-                    highLevelDesc: document.getElementById('global-high-level').value.trim() || "A beautifully styled professional image",
+                    highLevelDesc: document.getElementById('global-high-level').value.trim() || "A beautifully styled professional image layout",
                     styleType: styleType,
                     styleValue: document.getElementById('global-style-val').value.trim() || "",
                     medium: document.getElementById('global-medium').value.trim() || "",
@@ -1438,7 +870,7 @@
                 }
             };
 
-            // Map conditional keys photo/artStyle
+            // Conditionally route artStyle or camera photo variables depending on style type selector
             if (styleType === 'photo') {
                 if (styleSpec) promptObj.global.photo = styleSpec;
             } else {
@@ -1448,314 +880,52 @@
             return promptObj;
         }
 
-        function updateJsonPreview() {
-            const preview = document.getElementById('json-preview');
-            const compiled = compileJsonPrompt();
-            preview.innerText = JSON.stringify(compiled, null, 2);
+        // Custom, extremely high-performance regex-based JSON Syntax Highlighter
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                json = JSON.stringify(json, undefined, 4);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+                let cls = 'text-amber-400'; // Numeric values color code
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'text-indigo-400 font-semibold'; // Key parameters color code
+                    } else {
+                        cls = 'text-emerald-400 font-medium'; // String data color code
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'text-purple-400'; // Boolean variables color code
+                } else if (/null/.test(match)) {
+                    cls = 'text-zinc-600'; // Empty placeholders
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
         }
 
+        // Refreshes the highlighted JSON view panel
+        function updateJsonPreview() {
+            const view = document.getElementById('json-highlighted-view');
+            const compiled = compileJsonPrompt();
+            view.innerHTML = syntaxHighlight(compiled);
+        }
+
+        // Copy mechanism safely copying contents out to User Clipboard
         function copyCompiledJsonToClipboard() {
             const compiled = compileJsonPrompt();
+            const rawJson = JSON.stringify(compiled, null, 4);
+            
             const tempInput = document.createElement("textarea");
-            tempInput.value = JSON.stringify(compiled, null, 2);
+            tempInput.value = rawJson;
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand('copy');
             document.body.removeChild(tempInput);
-            showToast("Copied!", "The JSON prompt has been copied to your clipboard.", "indigo");
-        }
-
-        // Network dispatcher triggers current action
-        function triggerGeneration() {
-            const key = document.getElementById('api-key').value.trim();
-            const proxy = document.getElementById('api-proxy').value.trim();
-
-            // Validate requirements
-            if (!sandboxMode && !key) {
-                showToast("API Key Missing", "You must enter your Ideogram API key in the footer before generating.", "red");
-                return;
-            }
-
-            // Switch to output tab & reveal loader
-            switchCenterTab('tab-output');
-            document.getElementById('output-empty').classList.add('hidden');
-            document.getElementById('output-media-container').classList.add('hidden');
             
-            const loader = document.getElementById('output-loader');
-            const loaderText = document.getElementById('output-loader-text');
-            loader.classList.remove('hidden');
-
-            if (activeSection === 'generate') {
-                loaderText.innerText = "Sending Generation request to Ideogram 4.0...";
-                executeGenerateRequest(key, proxy);
-            } 
-            else if (activeSection === 'remix') {
-                if (!uploadedRemixFile && !sandboxMode) {
-                    showToast("Source Image Missing", "You must upload a Remix image in the sidebar on the left.", "red");
-                    abortOutputLoading();
-                    return;
-                }
-                loaderText.innerText = "Sending Remix request to Ideogram 4.0...";
-                executeRemixRequest(key, proxy);
-            } 
-            else if (activeSection === 'describe') {
-                if (!uploadedDescribeFile && !sandboxMode) {
-                    showToast("Image Missing", "You must select an image to analyze (Describe) first.", "red");
-                    abortOutputLoading();
-                    return;
-                }
-                loaderText.innerText = "Uploading image and analyzing layout with Ideogram 4.0...";
-                executeDescribeRequest(key, proxy);
-            }
+            showToast("Copied to Clipboard", "Ready to paste directly into your command line arguments or config file!", "indigo");
         }
 
-        function abortOutputLoading() {
-            document.getElementById('output-loader').classList.add('hidden');
-            document.getElementById('output-empty').classList.remove('hidden');
-            switchCenterTab('tab-editor');
-        }
-
-        // API implementation: Image Generation Endpoint
-        function executeGenerateRequest(key, proxy) {
-            if (sandboxMode) {
-                setTimeout(() => {
-                    const mockUrl = `https://placehold.co/1024x1024/09090b/e4e4e7?text=Ideogram+4.0+Generated+Simulation`;
-                    showSuccessOutput(mockUrl);
-                    showToast("Simulation Complete", "Images were successfully simulated (Demo Mode).", "emerald");
-                }, 2000);
-                return;
-            }
-
-            let endpoint = "https://api.ideogram.ai/v1/ideogram-v4/generate";
-            if (proxy) {
-                endpoint = proxy.endsWith('/') ? proxy + endpoint : proxy + '/' + endpoint;
-            }
-
-            const formData = new FormData();
-            if (generateMode === 'prompt') {
-                const textPrompt = document.getElementById('prompt-text').value.trim();
-                if (!textPrompt) {
-                    showToast("Prompt missing", "Please fill in a text prompt to generate your image.", "red");
-                    abortOutputLoading();
-                    return;
-                }
-                formData.append('text_prompt', textPrompt);
-            } else {
-                formData.append('json_prompt', JSON.stringify(compileJsonPrompt()));
-            }
-
-            formData.append('resolution', document.getElementById('gen-resolution').value);
-            formData.append('rendering_speed', document.getElementById('gen-speed').value);
-
-            fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Api-Key": key
-                },
-                body: formData
-            })
-            .then(res => {
-                if (!res.ok) return res.json().then(err => { throw new Error(err.message || "Unknown API error."); });
-                return res.json();
-            })
-            .then(data => {
-                if (data && data.data && data.data[0] && data.data[0].url) {
-                    showSuccessOutput(data.data[0].url);
-                    showToast("Generation Complete!", "Your image has been generated and retrieved.", "emerald");
-                } else {
-                    throw new Error("Could not parse API response properly.");
-                }
-            })
-            .catch(err => {
-                showToast("Generation Failed", err.message, "red");
-                abortOutputLoading();
-            });
-        }
-
-        // API implementation: Image Remix Endpoint
-        function executeRemixRequest(key, proxy) {
-            if (sandboxMode) {
-                setTimeout(() => {
-                    const mockUrl = `https://placehold.co/1024x1024/09090b/e4e4e7?text=Ideogram+4.0+Remix+Simulation`;
-                    showSuccessOutput(mockUrl);
-                    showToast("Remix Complete", "Images were successfully simulated (Demo Mode).", "emerald");
-                }, 2500);
-                return;
-            }
-
-            let endpoint = "https://api.ideogram.ai/v1/ideogram-v4/remix";
-            if (proxy) {
-                endpoint = proxy.endsWith('/') ? proxy + endpoint : proxy + '/' + endpoint;
-            }
-
-            const formData = new FormData();
-            formData.append('image_file', uploadedRemixFile);
-            formData.append('text_prompt', document.getElementById('remix-prompt').value.trim() || "A stylized artistic remix");
-            formData.append('image_weight', parseInt(document.getElementById('remix-weight').value));
-            formData.append('resolution', document.getElementById('remix-resolution').value);
-
-            fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Api-Key": key
-                },
-                body: formData
-            })
-            .then(res => {
-                if (!res.ok) return res.json().then(err => { throw new Error(err.message || "Unknown API error."); });
-                return res.json();
-            })
-            .then(data => {
-                if (data && data.data && data.data[0] && data.data[0].url) {
-                    showSuccessOutput(data.data[0].url);
-                    showToast("Remix Complete!", "Your image has been remixed and retrieved.", "emerald");
-                } else {
-                    throw new Error("Could not parse API response.");
-                }
-            })
-            .catch(err => {
-                showToast("Remix Failed", err.message, "red");
-                abortOutputLoading();
-            });
-        }
-
-        // API implementation: Image Describe Endpoint
-        function executeDescribeRequest(key, proxy) {
-            if (sandboxMode) {
-                setTimeout(() => {
-                    // Simulate an analyzed response from Describe endpoint with boxes
-                    lastDescribedResponse = {
-                        compositional_deconstruction: {
-                            background: { desc: "A dark tech room" },
-                            elements: [
-                                { type: "obj", desc: "A red computer monitor", bbox: [200, 300, 600, 700] },
-                                { type: "text", text: "LIVE", desc: "Glowing yellow text", bbox: [220, 450, 300, 550] }
-                            ]
-                        },
-                        global: {
-                            highLevelDesc: "A futuristic computer room with neon lights",
-                            styleType: "photo",
-                            styleValue: "Neon photography",
-                            medium: "Camera photo",
-                            aesthetics: "Retro cyberpunk",
-                            lighting: "Glowing neon"
-                        }
-                    };
-
-                    showSuccessOutput(document.getElementById('describe-preview').src, true);
-                    showToast("Analysis Complete!", "The description was simulated. You can now load the boxes back to the canvas!", "emerald");
-                }, 2000);
-                return;
-            }
-
-            let endpoint = "https://api.ideogram.ai/v1/ideogram-v4/describe";
-            if (proxy) {
-                endpoint = proxy.endsWith('/') ? proxy + endpoint : proxy + '/' + endpoint;
-            }
-
-            const formData = new FormData();
-            formData.append('image_file', uploadedDescribeFile);
-            formData.append('include_bbox', document.getElementById('describe-bbox').checked);
-
-            fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Api-Key": key
-                },
-                body: formData
-            })
-            .then(res => {
-                if (!res.ok) return res.json().then(err => { throw new Error(err.message || "Unknown API error."); });
-                return res.json();
-            })
-            .then(data => {
-                if (data && data.json_prompt) {
-                    // Save response
-                    lastDescribedResponse = data.json_prompt;
-                    
-                    // Show describe preview
-                    showSuccessOutput(document.getElementById('describe-preview').src, true);
-                    showToast("Analysis Complete!", "The image layout has been analyzed using Ideogram 4.0.", "emerald");
-                } else {
-                    throw new Error("Could not parse layout structure from description.");
-                }
-            })
-            .catch(err => {
-                showToast("Describe Failed", err.message, "red");
-                abortOutputLoading();
-            });
-        }
-
-        // Render success image in output view
-        function showSuccessOutput(imgUrl, isDescribeResult = false) {
-            document.getElementById('output-loader').classList.add('hidden');
-            
-            const img = document.getElementById('output-image');
-            img.src = imgUrl;
-
-            const dl = document.getElementById('output-btn-download');
-            dl.href = imgUrl;
-
-            const backportBtn = document.getElementById('output-btn-loadboxes');
-            if (isDescribeResult && lastDescribedResponse) {
-                backportBtn.classList.remove('hidden');
-            } else {
-                backportBtn.classList.add('hidden');
-            }
-
-            document.getElementById('output-media-container').classList.remove('hidden');
-        }
-
-        // Backports described boxes directly back into editor workspace
-        function loadDescribedBoxesBackToCanvas() {
-            if (!lastDescribedResponse) return;
-
-            try {
-                const s = lastDescribedResponse.global;
-                if (s) {
-                    document.getElementById('global-high-level').value = s.highLevelDesc || "";
-                    document.getElementById('global-background').value = lastDescribedResponse.compositional_deconstruction?.background?.desc || "";
-                    document.getElementById('style-type').value = s.styleType || "photo";
-                    document.getElementById('global-style-val').value = s.styleValue || "";
-                    document.getElementById('global-medium').value = s.medium || "";
-                    document.getElementById('global-aesthetics').value = s.aesthetics || "";
-                    document.getElementById('global-lighting').value = s.lighting || "";
-                    if (s.styleType === 'photo') {
-                        document.getElementById('global-photo-spec').value = s.photo || "";
-                    } else {
-                        document.getElementById('global-art-spec').value = s.artStyle || "";
-                    }
-                    toggleStyleInput();
-                }
-
-                // Map boxes
-                const elements = lastDescribedResponse.compositional_deconstruction?.elements || [];
-                boxes = elements.map((el, index) => {
-                    return {
-                        id: Date.now() + index,
-                        type: el.type || 'obj',
-                        ymin: el.bbox[0],
-                        xmin: el.bbox[1],
-                        ymax: el.bbox[2],
-                        xmax: el.bbox[3],
-                        desc: el.desc || "",
-                        text: el.text || ""
-                    };
-                });
-
-                selectedBoxId = null;
-                renderBoxesOnCanvas();
-                setGenerateMode('drawing');
-                switchCenterTab('tab-editor');
-
-                showToast("Boxes Loaded!", "The described composition and its boxes are now loaded on the canvas.", "emerald");
-
-            } catch (err) {
-                showToast("Error loading project", err.message, "red");
-            }
-        }
-
-        // Toast message engine (Non-intrusive alert box replacement)
+        // Toast message system notifications
         function showToast(title, body, color = "indigo") {
             const container = document.getElementById('toast-layer');
             const toast = document.createElement('div');
@@ -1769,28 +939,24 @@
 
             const selectedColor = colors[color] || colors.indigo;
 
-            toast.className = `p-4 rounded-xl border-2 shadow-2xl backdrop-blur-md flex items-start gap-3 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto max-w-sm ${selectedColor}`;
+            toast.className = `p-4 rounded-xl border shadow-2xl backdrop-blur-md flex flex-col gap-1 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto max-w-sm ${selectedColor}`;
             toast.innerHTML = `
-                <div class="space-y-1">
-                    <h5 class="font-extrabold text-xs tracking-wide uppercase">${title}</h5>
-                    <p class="text-[11px] leading-relaxed opacity-90">${body}</p>
-                </div>
+                <h5 class="font-bold text-[10px] tracking-widest uppercase">${title}</h5>
+                <p class="text-[11px] leading-relaxed opacity-90">${body}</p>
             `;
 
             container.appendChild(toast);
 
-            // Trigger animation frame
             setTimeout(() => {
                 toast.classList.remove('translate-y-2', 'opacity-0');
             }, 10);
 
-            // Self cleanup after duration
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-1');
                 setTimeout(() => {
                     toast.remove();
                 }, 300);
-            }, 4500);
+            }, 4000);
         }
     </script>
 </body>
