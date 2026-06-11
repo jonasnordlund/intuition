@@ -1,3 +1,5 @@
+<p align="center"><img height="300" alt="Intuition Logotype" src="https://github.com/user-attachments/assets/827d56b8-526c-4777-bed2-204210ad927f" /></p>
+
 # intuition
 
 **Intuition** is a suite of tools to assist with image generation, remixing, and magic prompt generation with the API for the high-quality Ideogram v4 image generator.
